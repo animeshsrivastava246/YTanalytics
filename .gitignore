@@ -1,5 +1,3 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
 # dependencies
 node_modules/
 
@@ -31,13 +29,61 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+.env
+.env.*.local
 
 # typescript
 *.tsbuildinfo
 
+# app-example
 app-example
 
 # generated native folders
 /ios
 /android
+
+# IDE/Editor folders
+.vscode/
+.idea/
+
+# JetBrains
+*.iml
+.idea/
+
+# macOS system files
+.AppleDouble
+.LSOverride
+
+# Windows system files
+Thumbs.db
+Desktop.ini
+
+# Linux system files
+*~
+
+# Logs
+logs/
+*.log
+
+# Coverage directory used by tools like Istanbul, nyc, etc.
+coverage/
+
+# build output
+build/
+*.apk
+*.aab
+
+# JetBrains Project Files
+.idea/
+
+# Other
+*.swp
+*~
+*.bak
+*.tmp
+
+# Sentry or Error Reporting Configuration Files
+.sentrycli/
+
+# Build artifacts from bundlers
+bundle/
