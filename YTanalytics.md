@@ -34,3 +34,5 @@ Mobile app (React Native) to search YouTube videos/playlists and display key ana
 
 - **Search Screen:** Search bar, filters, results list with thumbnails and brief stats, URL input field
 - **Details Screen:** Video/playlist title \& thumbnail, playback speed selector, adjusted watch time, likes/views/comments display, aggregated playlist stats
+
+# This is goind to be a mobile app similar to [https://socialblade.com](https://socialblade.com)
