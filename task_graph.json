@@ -1,0 +1,440 @@
+{
+  "project": "YTanalytics – Expo RN YouTube Analytics App",
+  "description": "Design + architecture + UX plan for a production-grade Expo/React Native application that uses YouTube Data API v3 to show deep stats for videos, playlists, channels, and custom combinations, with iOS liquid glass design and smooth react-native-ease animations.",
+  "phases": [
+    {
+      "id": "phase-1-product-and-data-model",
+      "title": "Phase 1 – Product Definition & Data Model",
+      "tasks": [
+        {
+          "id": "t1-entities-and-fields",
+          "title": "Define core entities and fields",
+          "type": "design-spec",
+          "description": "Define the domain model for YTanalytics. List core entities: Video, Playlist, Channel, CustomCombo (which can contain videos, playlists, and channels). For each entity, specify the fields the app will use (e.g., id, title, thumbnails, description, duration, views, likes, commentsCount, publishedAt, channelId, channelTitle, playlistCount, videoCount, subscriberCount). Clarify which fields must always be present vs optional and how they map to normalized app-level types (e.g., Video, Playlist, Channel TS interfaces).",
+          "acceptanceCriteria": [
+            "Document lists all entities the app uses.",
+            "Each entity has a field table with field name, type, source (YouTube API field), and optional/required status.",
+            "Definitions are suitable for strict TypeScript interfaces."
+          ]
+        },
+        {
+          "id": "t2-map-to-youtube-data-api",
+          "title": "Map entities to YouTube Data API v3 endpoints",
+          "type": "design-spec",
+          "description": "For each entity and feature, specify which YouTube Data API v3 endpoints are used and how. For example: videos.list, channels.list, playlists.list, playlistItems.list, search.list, and commentThreads.list (if comments are included). For each endpoint, document the parts (part=snippet,contentDetails,statistics, etc.), example request parameters, and relevant response fields. Include notes on combining multiple IDs into a single call and using 'fields' to limit payload size.",
+          "acceptanceCriteria": [
+            "Table or list showing each entity/feature and corresponding YouTube Data API endpoints.",
+            "For each endpoint, defined 'part' values and important fields.",
+            "Notes on batching IDs and using 'fields' for quota efficiency."
+          ]
+        },
+        {
+          "id": "t3-watch-time-rules",
+          "title": "Define watch-time computation rules",
+          "type": "design-spec",
+          "description": "Describe how YTanalytics computes watch time metrics. For a list of videos, define: total duration (sum), watch time at arbitrary playback speed (0.25x–3x), and time saved at faster speeds. Define rounding/formatting rules (e.g., round to nearest second, display as HH:MM:SS, and show 'time saved' as a human-readable string). This spec will guide the implementation of pure functions in utils and hooks in the features layer.",
+          "acceptanceCriteria": [
+            "Clear formula definitions for total duration and duration at speed.",
+            "Defined behavior for edge cases (no videos, 0 duration, non-standard speeds).",
+            "Formatting rules for durations and 'time saved' text are documented."
+          ]
+        },
+        {
+          "id": "t4-quota-and-optimization-constraints",
+          "title": "Specify YouTube API quota and optimization constraints",
+          "type": "design-spec",
+          "description": "Based on the default YouTube Data API v3 quotas and costs, describe how the app should behave to minimize quota usage: batching IDs into single calls, limiting fields with 'fields' parameter, avoiding unnecessary or duplicate requests via caching, and handling quota-exceeded scenarios gracefully. Include assumptions about daily quota (e.g., 10,000 units) and how the app UX should adapt (e.g., show friendly 'quota exceeded' states).",
+          "acceptanceCriteria": [
+            "List of strategies for minimizing YouTube Data API v3 quota usage.",
+            "Description of how the app responds when quota is exceeded.",
+            "Guidance that can be directly translated into service and UI logic."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-2-design-system-stitch",
+      "title": "Phase 2 – Design System via Stitch MCP",
+      "tasks": [
+        {
+          "id": "t5-design-tokens",
+          "title": "Generate design tokens for YTanalytics",
+          "type": "design-system",
+          "description": "Using Stitch MCP, generate a full design token set for YTanalytics. Include light and dark theme color palettes with semantic token names (surfaceBg, surfaceGlassPrimary, surfaceGlassSecondary, accentPrimary, accentSecondary, textPrimary, textMuted, borderSubtle, success, warning, error). Define typography scale (H1–H4, subtitle, body, caption) tailored to iOS Human Interface Guidelines, plus spacing (4pt/8pt grid), radii presets (xs, sm, md, lg, pill), shadows/elevations, and glass-effect parameters (blur radius, tint, opacity, saturation) for different surface types.",
+          "acceptanceCriteria": [
+            "Design tokens defined for colors, typography, spacing, radii, shadows, and glass parameters.",
+            "Tokens use semantic names, not raw hex values in component logic.",
+            "Tokens are suitable for exporting to a `design-tokens.ts` file and NativeWind config."
+          ]
+        },
+        {
+          "id": "t6-glass-surface-taxonomy",
+          "title": "Define liquid glass surface taxonomy",
+          "type": "design-system",
+          "description": "Create a taxonomy of glass surfaces for the app: e.g., PrimaryGlass (tab bar, main navigation surfaces), SecondaryGlass (cards and stat panels), TertiaryGlass (chips, floating controls). For each type, specify blur radius, tint color, opacity, saturation, brightness, and elevation levels to achieve an iOS liquid glass look. Document how each surface type should be used in layouts (e.g., PrimaryGlass reserved for persistent navigation, SecondaryGlass for prominent content cards).",
+          "acceptanceCriteria": [
+            "Three or more glass surface types with well-defined visual parameters.",
+            "Usage guidelines describing where each glass type should be used.",
+            "Parameters expressed in a way that maps to Expo glass / blur APIs."
+          ]
+        },
+        {
+          "id": "t7-token-export-format",
+          "title": "Specify token export format",
+          "type": "design-system",
+          "description": "Define the structure of the design tokens output so it can be consumed by the codebase. Provide a JSON-like schema that can map directly to a `design-tokens.ts` file and a NativeWind configuration. Include example objects for colors, typography, spacing, radii, shadows, and glassEffect settings. The goal is to allow a coding agent to drop this into the repo with minimal editing.",
+          "acceptanceCriteria": [
+            "JSON-like schema for tokens documented (keys and value shapes).",
+            "Example snippet that can map directly to TypeScript constants.",
+            "NativeWind-relevant fields (colors, fontSizes, spacing, radii) are clearly indicated."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-3-ui-primitives-and-animations",
+      "title": "Phase 3 – UI Primitives & Animation Contracts",
+      "tasks": [
+        {
+          "id": "t8-ui-primitives",
+          "title": "Design primitive UI components",
+          "type": "ui-spec",
+          "description": "Using the design tokens, specify a set of base UI primitives: GlassSurface, Surface, AppText, IconButton, PrimaryButton, Chip, Card, SectionHeader, StatPill, BottomSheetContainer. For each component, define its props (with TypeScript-style types), supported variants (e.g., primary, secondary, subtle), and how it consumes design tokens. Focus on keeping components small, reusable, and presentational only.",
+          "acceptanceCriteria": [
+            "List of primitive components with clear prop definitions.",
+            "Each primitive uses semantic token references rather than hardcoded styles.",
+            "Design encourages small, reusable, and strictly presentational components."
+          ]
+        },
+        {
+          "id": "t9-animation-usage-patterns",
+          "title": "Define animation patterns with react-native-ease and Reanimated",
+          "type": "ui-spec",
+          "description": "Describe how animations are used across primitives and screens. For micro-interactions (button press, chip selection, simple fades/scales), specify the use of react-native-ease. For complex interactions (bottom sheets, shared element transitions, swipeable rows), specify use of Reanimated + gesture-handler. Provide concrete animation patterns: e.g., button press scale from 1 to 0.96 with 150ms duration, card fade-in on mount, staggered list item entry. These descriptions will guide implementation but should not include full code.",
+          "acceptanceCriteria": [
+            "Documented animation patterns for buttons, cards, tabs, and list items.",
+            "Clear decision rules for when to use react-native-ease vs Reanimated.",
+            "Patterns are performance-conscious and non-blocking."
+          ]
+        },
+        {
+          "id": "t10-tsx-blueprints",
+          "title": "Provide TSX-oriented component blueprints",
+          "type": "blueprint",
+          "description": "Produce pseudo-TSX blueprints for key primitives (GlassSurface, PrimaryButton, Card, SectionHeader). Show how props flow in, where Expo glass/blur props attach, and how react-native-ease animation wrappers/hooks integrate. The goal is not production-ready code, but a highly structured blueprint that a coding agent can easily convert to actual components.",
+          "acceptanceCriteria": [
+            "Blueprints are written in TSX-like syntax with props and children.",
+            "Each blueprint shows where glass/blur props and animations integrate.",
+            "Components are small and align with the SOLID and DRY principles."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-4-navigation-and-structure",
+      "title": "Phase 4 – Navigation & App Structure (Expo Router)",
+      "tasks": [
+        {
+          "id": "t11-file-structure",
+          "title": "Propose app directory and file structure",
+          "type": "architecture-spec",
+          "description": "Define the overall file and folder structure for the Expo Router + feature architecture. Include: app/ (with _layout, tabs layout, and route files for home, search, combos, settings, and detail screens), components/ (global primitives), features/ (video, playlist, channel, search, combos, each with components, hooks, services), hooks/, services/, utils/, assets/. Keep structure aligned with the skills.md guidance and ensure features are modular, testable, and scalable.",
+          "acceptanceCriteria": [
+            "Tree-style directory structure documented with brief descriptions.",
+            "Each feature module has clear boundaries and internal folders.",
+            "Routing files in app/ are focused on screen orchestration, not business logic."
+          ]
+        },
+        {
+          "id": "t12-navigation-flows",
+          "title": "Define navigation flows using Expo Router",
+          "type": "architecture-spec",
+          "description": "Describe the main navigation flows and how they map to Expo Router routes and layouts. Examples: Home → search → video/playlist/channel detail; Combos tab → combo list → combo detail → edit combo; Settings for theme, default speed, API status. Specify usage of nested layouts, tab layout, and stack overlays for modals. Ensure iOS-like navigation patterns and deep linking potential.",
+          "acceptanceCriteria": [
+            "Flow diagrams or narrative descriptions for primary user journeys.",
+            "Mapping between flows and specific route files (e.g., app/(tabs)/index.tsx, app/video/[id].tsx).",
+            "Design follows Apple HIG navigation conventions."
+          ]
+        },
+        {
+          "id": "t13-glass-in-layouts",
+          "title": "Specify glass usage in layouts",
+          "type": "ui-spec",
+          "description": "For root layout and tabs layout, define how liquid glass surfaces are used. Example: primary glass background in root layout with subtle gradient; glass bottom tab bar; glass headers and floating search bar on key screens. Document which components use which glass surface tokens (PrimaryGlass, SecondaryGlass, TertiaryGlass) to keep usage consistent.",
+          "acceptanceCriteria": [
+            "Per-layout description of glass usage (root, tabs, key screens).",
+            "Mapping from layout parts to glass surface token types.",
+            "Guidelines avoid overuse of heavy glass effects to protect performance."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-5-api-layer-youtube",
+      "title": "Phase 5 – API Layer Design (YouTube Data API v3)",
+      "tasks": [
+        {
+          "id": "t14-youtube-client-abstraction",
+          "title": "Design YouTube API client abstraction",
+          "type": "architecture-spec",
+          "description": "Specify a YouTubeClient abstraction in services/youtube that wraps YouTube Data API v3 calls. Define methods like searchVideos, searchChannels, searchPlaylists (wrapping search.list), getVideoDetails, getPlaylistDetails, getChannelDetails (wrapping videos.list, playlists.list, channels.list), getPlaylistItems, getChannelVideos, and optionally getVideoComments. For each method, specify inputs, outputs (normalized entities), and how raw API responses are transformed.",
+          "acceptanceCriteria": [
+            "List of methods with inputs/outputs and purpose.",
+            "Description of normalization from raw API to app-level types.",
+            "Abstraction hides direct HTTP details from feature code."
+          ]
+        },
+        {
+          "id": "t15-response-types",
+          "title": "Define TypeScript interfaces for normalized responses",
+          "type": "design-spec",
+          "description": "Based on t1 and t2, define strict TypeScript-style interfaces for Video, Playlist, Channel, and any other normalized types. Ensure they contain only fields used by the app and clearly separate them from raw YouTube API response shapes. This will be implemented later as TS interfaces/types in the codebase.",
+          "acceptanceCriteria": [
+            "Interface-like definitions for all major normalized entities.",
+            "Optional vs required fields clearly indicated.",
+            "Types are ready to be copied into TypeScript code with minimal changes."
+          ]
+        },
+        {
+          "id": "t16-quota-efficient-fetching",
+          "title": "Plan quota-efficient fetching strategies",
+          "type": "architecture-spec",
+          "description": "Describe how the YouTubeClient methods will minimize quota usage and latency: combining multiple IDs in one call (videos.list, channels.list), using 'part' and 'fields' to fetch only required data, caching results via TanStack Query, and avoiding repeated requests for the same IDs. Include guidance for search pagination and limits per request.",
+          "acceptanceCriteria": [
+            "Strategies listed and tied to specific methods in YouTubeClient.",
+            "Guidance on pagination and request sizing.",
+            "Plan aligns with YouTube Data API v3 quota rules and best practices."
+          ]
+        },
+        {
+          "id": "t17-tanstack-query-hooks",
+          "title": "Define TanStack Query hooks",
+          "type": "architecture-spec",
+          "description": "Specify the contract for query hooks: useVideo(id), usePlaylist(id), useChannel(id), useSearch(query, type), usePlaylistVideos(playlistId), useChannelVideos(channelId), and others as needed. For each hook, define query keys, stale times, retry settings, and error handling approaches. These specs will be implemented in the features layer.",
+          "acceptanceCriteria": [
+            "List of hooks with parameters and return shapes.",
+            "Query key patterns and cache/stale-time strategies defined.",
+            "Hooks align with async/await, error/loading/success state handling requirements."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-6-watchtime-aggregation",
+      "title": "Phase 6 – Watch-time & Aggregation Logic",
+      "tasks": [
+        {
+          "id": "t18-utils-watchtime",
+          "title": "Design pure watch-time utilities",
+          "type": "design-spec",
+          "description": "Specify the pure utility functions in utils/watchTime: parseISO8601DurationToSeconds, sumDurations, computeTotalTimeAtSpeed, computeTimeSaved, and formatDuration. Define function signatures and behavior. These utilities should be side-effect free, fully testable, and independent of UI.",
+          "acceptanceCriteria": [
+            "List of utility functions with input/output descriptions.",
+            "Clear rules for handling invalid or missing durations.",
+            "Guidance supports easy unit testing."
+          ]
+        },
+        {
+          "id": "t19-useWatchTime-hook",
+          "title": "Specify useWatchTime hook contract",
+          "type": "design-spec",
+          "description": "Define the contract for a useWatchTime hook. Input: list of normalized videos (with durations) and a selected playback speed. Output: totalTimeSeconds, totalTimeAtSpeedSeconds, timeSavedSeconds, and formatted strings (for labels and UI display). Describe any memoization or recalculation behavior when inputs change.",
+          "acceptanceCriteria": [
+            "Hook inputs and outputs clearly specified.",
+            "Behavior on empty list or invalid speed documented.",
+            "Design encourages performance (memoization, cheap computations)."
+          ]
+        },
+        {
+          "id": "t20-combo-aggregation-rules",
+          "title": "Define combo aggregation rules",
+          "type": "design-spec",
+          "description": "Describe how CustomCombo entities aggregate stats across multiple videos, playlists, and channels. Define the strategy to flatten combos into a list of videos (via YouTubeClient methods) and then compute aggregate duration, duration at speed, views, likes, and other metrics. Clarify how to handle duplicates (same video added multiple times) and mixed content.",
+          "acceptanceCriteria": [
+            "Rules for flattening combos into video lists are defined.",
+            "Aggregation rules for duration and stats are clear.",
+            "Edge cases (duplicates, missing videos) are covered."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-7-features-and-screens",
+      "title": "Phase 7 – Feature Modules & Screen Specs",
+      "tasks": [
+        {
+          "id": "t21-home-dashboard",
+          "title": "Specify Home / Dashboard screen",
+          "type": "ui-spec",
+          "description": "Describe the layout and content of the Home screen: glass hero header, quick search bar, sections for recent searches, saved combos, and maybe suggested channels or playlists. For each section, define which primitives are used (e.g., SectionHeader, Card, StatPill), what data they display, and any entry animations (e.g., fade/slide using react-native-ease).",
+          "acceptanceCriteria": [
+            "Home screen sections and their layouts described.",
+            "Data shown in each section documented.",
+            "Animation and glass usage specified at a high level."
+          ]
+        },
+        {
+          "id": "t22-search-screen",
+          "title": "Specify Search & Results screen",
+          "type": "ui-spec",
+          "description": "Define UX for search: glass search bar with type filters (video, playlist, channel), search results list with distinct row designs per type (icon, label, stats), and actions such as 'View Details' and 'Add to Combo'. Describe empty and loading states and micro-interactions like highlighting selected filters and row press feedback.",
+          "acceptanceCriteria": [
+            "Search bar, filters, and result rows described.",
+            "Actions and states (loading, empty, error) defined.",
+            "Animation and glass usage consistent with primitives."
+          ]
+        },
+        {
+          "id": "t23-video-detail",
+          "title": "Specify Video Detail screen",
+          "type": "ui-spec",
+          "description": "Describe layout for the video detail screen: hero card with thumbnail and overlayed stats on glass, sections for time details (duration, watch time at speed, time saved), and stat blocks (views, likes, comments, publish date). Include actions (Add to Combo, Open in YouTube). Specify any animations for entering the screen and interacting with speed controls.",
+          "acceptanceCriteria": [
+            "Video detail layout and sections documented.",
+            "All metrics displayed are listed.",
+            "Interactions and animations defined at a high level."
+          ]
+        },
+        {
+          "id": "t24-playlist-channel-detail",
+          "title": "Specify Playlist & Channel Detail screens",
+          "type": "ui-spec",
+          "description": "Define the UI and UX for playlist detail (aggregate header + list of videos) and channel detail (aggregate header + list of playlists or uploads). For each, specify how total duration, duration at speed, total views, and other stats are displayed. Describe list behavior (FlashList or optimized list), row design, and interactions (tap to open video, add to combo).",
+          "acceptanceCriteria": [
+            "Playlist and channel detail layouts described separately.",
+            "Aggregate stats and per-item details clearly defined.",
+            "List behavior and interactions documented."
+          ]
+        },
+        {
+          "id": "t25-combos-screens",
+          "title": "Specify Combos feature screens",
+          "type": "ui-spec",
+          "description": "Describe UX for combos: combo list screen (saved combos), combo detail (summary and items), and combo builder/editor. For each screen, specify layout, glass usage, which primitives are used, and how users add/remove/reorder items. Define how aggregate metrics are presented and updated when the playback speed changes.",
+          "acceptanceCriteria": [
+            "Combo list, detail, and builder screens described.",
+            "User actions (add, remove, reorder, rename) documented.",
+            "Aggregation display and updates clearly explained."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-8-animations-micro",
+      "title": "Phase 8 – Animations & Micro-Interactions",
+      "tasks": [
+        {
+          "id": "t26-global-animation-guidelines",
+          "title": "Define global animation guidelines",
+          "type": "ui-spec",
+          "description": "Create a short guideline document describing global animation behavior: screen transitions, list entrance animations, and micro-interactions. Specify that micro-interactions use react-native-ease where possible, with durations (<300ms), and that heavy animations use Reanimated for performance. Emphasize non-blocking, interruptible animations.",
+          "acceptanceCriteria": [
+            "Global animation rules documented.",
+            "Time ranges and performance constraints specified.",
+            "Guidelines for interruptibility and not blocking input."
+          ]
+        },
+        {
+          "id": "t27-component-animations",
+          "title": "Define per-component animation specs",
+          "type": "ui-spec",
+          "description": "For key components (buttons, chips, cards, list rows, bottom sheets), specify exact animation behaviors. Examples: button press scale in/out, chip selection color + scale, card entrance fade/slide, bottom sheet spring animation. Indicate whether each uses react-native-ease or Reanimated + gestures.",
+          "acceptanceCriteria": [
+            "Per-component animation behaviors listed.",
+            "Animation library choice documented per behavior.",
+            "Specs align with performance best practices."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-9-states-and-compliance",
+      "title": "Phase 9 – Loading, Error, Empty States & Compliance",
+      "tasks": [
+        {
+          "id": "t28-loading-skeletons",
+          "title": "Design loading and skeleton states",
+          "type": "ui-spec",
+          "description": "Define skeleton and loading states for lists and detail screens: glass skeleton cards, shimmer placeholders for thumbnails and text, and placeholder stats for time calculations. Describe how these states appear and disappear (animations via react-native-ease).",
+          "acceptanceCriteria": [
+            "Skeleton designs for lists and cards specified.",
+            "Behavior from loading → loaded documented.",
+            "Visual style is consistent with glass surfaces and tokens."
+          ]
+        },
+        {
+          "id": "t29-error-states",
+          "title": "Design error states (network, quota, API)",
+          "type": "ui-spec",
+          "description": "Describe error states for network issues, YouTube Data API errors, and quota exceeded. For each, specify messaging tone, layout (glass or plain surface), actions (retry, open settings), and how often retries are allowed. Ensure these states are non-blocking where possible and clearly inform users.",
+          "acceptanceCriteria": [
+            "Distinct UX patterns for network, API, and quota errors.",
+            "Retry behaviors documented.",
+            "Copy tone and layout guidelines provided."
+          ]
+        },
+        {
+          "id": "t30-empty-states",
+          "title": "Design empty states",
+          "type": "ui-spec",
+          "description": "Define empty states for search (no results), combos (no combos yet), recent searches (empty on first use), and others. Include illustrative text, icons/illustrations, and CTAs guiding users to primary actions (e.g., 'Start a search', 'Create your first combo').",
+          "acceptanceCriteria": [
+            "Empty states defined for all relevant screens.",
+            "Each has clear copy and CTA.",
+            "Visuals match design system and tone."
+          ]
+        },
+        {
+          "id": "t31-settings-and-preferences",
+          "title": "Specify settings & preferences",
+          "type": "design-spec",
+          "description": "Describe the Settings screen: default playback speed, theme (light/dark/system), data usage preferences (e.g., limit loading comments), and any debug information (API status). Define how these preferences interact with the rest of the app (e.g., watch-time calculations default speed, glass intensity).",
+          "acceptanceCriteria": [
+            "List of settings and their effects on the app.",
+            "Settings layout and glass usage described.",
+            "Preferences tie into existing feature specs."
+          ]
+        },
+        {
+          "id": "t32-api-compliance-checklist",
+          "title": "Create YouTube API compliance and quota checklist",
+          "type": "design-spec",
+          "description": "Produce a checklist that ensures ongoing alignment with YouTube Data API v3 terms of service and quota rules: no scraping, proper use of data, clear attribution when needed, handling of quota limits, and monitoring. This will be used later for QA and release readiness.",
+          "acceptanceCriteria": [
+            "Checklist covers data usage, quota, and ToS compliance.",
+            "Items are actionable and verifiable.",
+            "Checklist can be referenced before production release."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-10-implementation-planning",
+      "title": "Phase 10 – Implementation Planning for Coding Agents",
+      "tasks": [
+        {
+          "id": "t33-ticketization",
+          "title": "Map specs to implementation tickets",
+          "type": "planning",
+          "description": "Convert all above tasks into implementation tickets suitable for coding agents. For each ticket, include: title, brief description, relevant folders/files, and acceptance criteria. Group tickets by feature/module (design system, primitives, navigation, YouTube service, watch-time utils, features, animations).",
+          "acceptanceCriteria": [
+            "Implementation tickets generated for each spec.",
+            "Tickets reference concrete paths (e.g., features/video/hooks/useVideo.ts).",
+            "Acceptance criteria enable clear 'done' checks."
+          ]
+        },
+        {
+          "id": "t34-mvp-vs-v2-priorities",
+          "title": "Define MVP vs v2 scope",
+          "type": "planning",
+          "description": "From all planned features, mark which belong to the MVP (search, basic details for video/playlist/channel, watch-time calculations, combos) and which are v2+ (comments, advanced analytics, offline support, user accounts). Provide a short rationale for each prioritization.",
+          "acceptanceCriteria": [
+            "MVP feature list clearly tagged.",
+            "v2+ feature list clearly tagged.",
+            "Prioritization rationale documented."
+          ]
+        }
+      ]
+    }
+  ]
+}
