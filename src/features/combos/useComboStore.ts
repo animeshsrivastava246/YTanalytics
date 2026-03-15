@@ -1,21 +1,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-export type ComboItemType = 'video' | 'playlist' | 'channel';
+import { ComboItem, CustomCombo } from '@/services/youtube.types';
 
-export interface ComboItem {
-  id: string; // The youtube ID
-  type: ComboItemType;
-  title: string;
-  thumbnailUrl: string;
-}
-
-export interface CustomCombo {
-  id: string; // internal UUID
-  title: string;
-  items: ComboItem[];
-  createdAt: string;
-}
+export type { ComboItem, CustomCombo };
 
 interface ComboStore {
   combos: CustomCombo[];

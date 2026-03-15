@@ -58,10 +58,22 @@ export function useChannel(id: string) {
 export function usePlaylistItems(playlistId: string) {
   return useInfiniteQuery({
     queryKey: ['playlistItems', playlistId],
-    queryFn: ({ pageParam }) => youtubeClient.getPlaylistItems(playlistId, pageParam as string | undefined),
-    initialPageParam: undefined,
+    queryFn: ({ pageParam }) => youtubeClient.getPlaylistItems(playlistId, pageParam),
+    initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextPageToken,
     enabled: !!playlistId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useCommentThreads(videoId: string, maxResults = 20) {
+  return useInfiniteQuery({
+    queryKey: ['commentThreads', videoId],
+    queryFn: ({ pageParam }) =>
+      youtubeClient.getCommentThreads(videoId, maxResults, pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextPageToken,
+    enabled: !!videoId,
     staleTime: 5 * 60 * 1000,
   });
 }

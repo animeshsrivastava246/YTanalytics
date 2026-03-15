@@ -23,10 +23,11 @@ export function sumDurations(secondsArray: number[]): number {
 
 /**
  * Computes the time it takes to watch `totalSeconds` at `playbackSpeed`.
+ * Clamps speed to [0.25, 3] range per Phase 1 spec to prevent absurd values.
  */
 export function computeTotalTimeAtSpeed(totalSeconds: number, playbackSpeed: number): number {
-  if (playbackSpeed <= 0) return totalSeconds;
-  return Math.round(totalSeconds / playbackSpeed);
+  const clampedSpeed = Math.min(Math.max(playbackSpeed, 0.25), 3);
+  return Math.round(totalSeconds / clampedSpeed);
 }
 
 /**
