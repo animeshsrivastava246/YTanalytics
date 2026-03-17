@@ -74,7 +74,7 @@ export default function ComboDetailScreen() {
             <AppText variant="h1">{watchTime.timeAtSpeedFormatted}</AppText>
             {watchTime.timeSavedSeconds > 0 && (
               <AppText variant="h4" color="accent" style={styles.savedResult}>
-                Saved: {watchTime.timeSavedFormatted}
+                You save {watchTime.timeSavedFormatted}
               </AppText>
             )}
           </View>

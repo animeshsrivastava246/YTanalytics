@@ -1,5 +1,6 @@
 import { BlurView, BlurTint } from 'expo-blur';
-import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
+import { View, StyleSheet, ViewStyle, StyleProp, Platform } from 'react-native';
 import { tokens } from '@/constants/tokens';
 import { ReactNode } from 'react';
 
@@ -11,6 +12,7 @@ interface GlassSurfaceProps {
   tint?: BlurTint;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
+  isInteractive?: boolean;
 }
 
 export const GlassSurface = ({ 
@@ -19,9 +21,26 @@ export const GlassSurface = ({
   tint,
   style, 
   children,
+  isInteractive = false,
   ...rest
 }: GlassSurfaceProps) => {
+  const isLiquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
   const effect = tokens.theme.glassEffect[type];
+  const glassStyle = tokens.theme.glassStyle[type];
+
+  if (isLiquidGlass) {
+    return (
+      <View style={[styles.container, style]} {...rest}>
+        <GlassView
+          glassEffectStyle={glassStyle.style}
+          colorScheme={glassStyle.colorScheme}
+          isInteractive={isInteractive}
+          style={StyleSheet.absoluteFillObject}
+        />
+        {children}
+      </View>
+    );
+  }
 
   return (
     <BlurView

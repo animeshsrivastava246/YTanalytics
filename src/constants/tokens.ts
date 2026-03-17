@@ -1,4 +1,5 @@
 import { BlurTint } from 'expo-blur';
+import { GlassStyle, GlassColorScheme } from 'expo-glass-effect';
 
 export const tokens = {
   theme: {
@@ -47,5 +48,11 @@ export const tokens = {
       secondary: { intensity: 80, tint: 'dark' as BlurTint },
       tertiary: { intensity: 50, tint: 'default' as BlurTint },
     },
+    glassStyle: {
+      primary: { style: 'regular' as GlassStyle, colorScheme: 'dark' as GlassColorScheme },
+      secondary: { style: 'regular' as GlassStyle, colorScheme: 'auto' as GlassColorScheme },
+      tertiary: { style: 'clear' as GlassStyle, colorScheme: 'auto' as GlassColorScheme },
+    },
   },
 };
+
