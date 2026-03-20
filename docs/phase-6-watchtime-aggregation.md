@@ -48,7 +48,10 @@ interface UseWatchTimeResult {
   timeSavedFormatted: string;
 }
 
-export function useWatchTime(videos: AppVideo[], playbackSpeed: number): UseWatchTimeResult {
+export function useWatchTime(
+  videos: AppVideo[],
+  playbackSpeed: number
+): UseWatchTimeResult {
   return useMemo(() => {
     // 1. Map videos to seconds
     // 2. Sum
@@ -58,7 +61,8 @@ export function useWatchTime(videos: AppVideo[], playbackSpeed: number): UseWatc
   }, [videos, playbackSpeed]);
 }
 ```
-*Note: Using `useMemo` is critical here as formatting large arrays of videos into `AppVideo` on every render can be expensive.*
+
+_Note: Using `useMemo` is critical here as formatting large arrays of videos into `AppVideo` on every render can be expensive._
 
 ---
 
@@ -67,6 +71,7 @@ export function useWatchTime(videos: AppVideo[], playbackSpeed: number): UseWatc
 A `CustomCombo` is a user-curated playlist that can mix Videos, Playlists, and Channels together.
 
 **Aggregation Flow:**
+
 1. Given a `CustomCombo`, extract its `items`.
 2. Map over the items.
    - For `type === 'video'`, push the ID to a `resolvedVideos` list.

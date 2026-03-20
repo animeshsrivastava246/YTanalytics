@@ -1,15 +1,18 @@
 import { Stack } from 'expo-router';
 import { StyleSheet, Alert } from 'react-native';
-import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  QueryCache,
+} from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { tokens } from '@/constants/tokens';
-import { QuotaExceededError } from '@/services/youtube.types';
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
-    onError: (error: any) => {
+    onError: (error: Error) => {
       if (error?.name === 'QuotaExceededError') {
         Alert.alert(
           'API Limit Reached',

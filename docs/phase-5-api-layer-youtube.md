@@ -5,6 +5,7 @@
 A centralized service (`services/youtubeClient.ts`) handles all external HTTPS calls to Google APIs, wrapping standard `fetch` or `axios` methods. It maps raw responses to our normalized TS interfaces.
 
 ### Core Methods:
+
 - `search(query: string, type: 'video'|'playlist'|'channel', pageToken?: string)`: Calls `GET /search`. Returns an array of basic ID objects + `nextPageToken`.
 - `getVideos(ids: string[])`: Calls `GET /videos?part=snippet,contentDetails,statistics`. Chunks IDs if `ids.length > 50`.
 - `getPlaylists(ids: string[])`: Calls `GET /playlists?part=snippet,contentDetails`.
@@ -62,7 +63,7 @@ export interface AppChannel {
 
 ## Task 16: Quota-Efficient Fetching Strategies
 
-1. **ID Batching on Search**: 
+1. **ID Batching on Search**:
    - `search.list` only returns Video IDs.
    - The client takes those 10-20 IDs, batches them into a single `getVideos` (comma separated string) call, using exactly 1 quota unit instead of 10.
 2. **Field Masking**:

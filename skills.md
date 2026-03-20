@@ -69,6 +69,7 @@ This document defines the operational expertise and engineering standards for th
 ## MCP Server Integration
 
 This project actively leverages the **Stitch MCP server** for accelerated, modern design workflows:
+
 - **Design tokens**: Syncing and generating consistent color palettes, semantic themes, and typography scales orchestrated directly from Stitch integrations.
 - **Scalable UI primitives**: Rapidly generating beautifully formatted foundational UI components leveraging Stitch capabilities.
 - **Component generation**: Using Stitch to scaffold complex, beautifully styled, responsive UI components based on text prompts and precise design requirements without writing boilerplate.

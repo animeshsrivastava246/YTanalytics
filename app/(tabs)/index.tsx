@@ -13,10 +13,18 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <GlassSurface type="primary" style={[styles.header, { paddingTop: insets.top }]}>
-        <AppText variant="h1" style={styles.title}>YTanalytics</AppText>
-        
-        <Pressable style={styles.searchBar} onPress={() => router.push('/search')}>
+      <GlassSurface
+        type="primary"
+        style={[styles.header, { paddingTop: insets.top }]}
+      >
+        <AppText variant="h1" style={styles.title}>
+          YTanalytics
+        </AppText>
+
+        <Pressable
+          style={styles.searchBar}
+          onPress={() => router.push('/search')}
+        >
           <Search color={tokens.theme.colors.textMuted} size={20} />
           <AppText variant="body" color="muted" style={styles.searchText}>
             Search YouTube...
@@ -24,12 +32,18 @@ export default function Home() {
         </Pressable>
       </GlassSurface>
 
-      <ScrollView 
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 100 }]}
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: insets.bottom + 100 },
+        ]}
       >
-        <AppText variant="h3" style={styles.sectionTitle}>Welcome</AppText>
+        <AppText variant="h3" style={styles.sectionTitle}>
+          Welcome
+        </AppText>
         <AppText variant="body" color="muted">
-          Tap the search bar above to look for videos and calculate how much time you can save by watching at higher playback speeds.
+          Tap the search bar above to look for videos and calculate how much
+          time you can save by watching at higher playback speeds.
         </AppText>
       </ScrollView>
     </View>
@@ -63,5 +77,5 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginBottom: tokens.theme.spacing.sm,
-  }
+  },
 });

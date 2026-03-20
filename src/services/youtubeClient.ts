@@ -40,7 +40,7 @@ api.interceptors.response.use(
     if (error.response?.status === 403) {
       const data = error.response.data as Record<string, unknown> | undefined;
       const apiError = data?.error as
-        | { errors?: Array<{ reason?: string }> }
+        | { errors?: { reason?: string }[] }
         | undefined;
       const reason = apiError?.errors?.[0]?.reason;
 

@@ -1,10 +1,21 @@
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { youtubeClient } from '@/services/youtubeClient';
 
-export function useSearch(query: string, type: 'video' | 'playlist' | 'channel') {
+import {
+  RawYouTubeSearchItem,
+  RawYouTubePlaylistItemDetails,
+} from '@/services/youtube.types';
+
+export function useSearch(
+  query: string,
+  type: 'video' | 'playlist' | 'channel'
+) {
   return useQuery({
     queryKey: ['search', type, query],
-    queryFn: () => youtubeClient.search(query, type),
+    queryFn: async () => {
+      const data = await youtubeClient.search(query, type);
+      return data as { items: RawYouTubeSearchItem[]; nextPageToken?: string };
+    },
     enabled: !!query,
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
@@ -58,7 +69,13 @@ export function useChannel(id: string) {
 export function usePlaylistItems(playlistId: string) {
   return useInfiniteQuery({
     queryKey: ['playlistItems', playlistId],
-    queryFn: ({ pageParam }) => youtubeClient.getPlaylistItems(playlistId, pageParam),
+    queryFn: async ({ pageParam }) => {
+      const data = await youtubeClient.getPlaylistItems(playlistId, pageParam);
+      return data as {
+        items: RawYouTubePlaylistItemDetails[];
+        nextPageToken?: string;
+      };
+    },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextPageToken,
     enabled: !!playlistId,

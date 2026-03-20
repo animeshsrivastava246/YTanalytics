@@ -27,7 +27,9 @@ export const useComboStore = create<ComboStore>()(
       },
       updateCombo: (id, updates) => {
         set((state) => ({
-          combos: state.combos.map((c) => (c.id === id ? { ...c, ...updates } : c)),
+          combos: state.combos.map((c) =>
+            c.id === id ? { ...c, ...updates } : c
+          ),
         }));
       },
       deleteCombo: (id) => {

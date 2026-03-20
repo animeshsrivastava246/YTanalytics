@@ -136,6 +136,29 @@ export interface RawYouTubeCommentThreadItem {
   };
 }
 
+export interface RawYouTubePlaylistItemDetails {
+  contentDetails: {
+    videoId: string;
+  };
+}
+
+export interface RawYouTubeSearchItem {
+  id: {
+    kind: string;
+    videoId?: string;
+    playlistId?: string;
+    channelId?: string;
+  };
+  snippet?: {
+    title?: string;
+    description?: string;
+    thumbnails?: { high?: RawThumbnail };
+    channelId?: string;
+    channelTitle?: string;
+    publishedAt?: string;
+  };
+}
+
 // ─── Quota Error ─────────────────────────────────────────────────────────────
 
 export class QuotaExceededError extends Error {

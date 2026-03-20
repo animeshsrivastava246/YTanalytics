@@ -2,7 +2,7 @@ import { BlurView, BlurTint } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { View, StyleSheet, ViewStyle, StyleProp, Platform } from 'react-native';
 import { tokens } from '@/constants/tokens';
-import { ReactNode } from 'react';
+import React, { ReactNode, memo } from 'react';
 
 type GlassType = 'primary' | 'secondary' | 'tertiary';
 
@@ -15,48 +15,60 @@ interface GlassSurfaceProps {
   isInteractive?: boolean;
 }
 
-export const GlassSurface = ({ 
-  type = 'secondary', 
-  intensity,
-  tint,
-  style, 
-  children,
-  isInteractive = false,
-  ...rest
-}: GlassSurfaceProps) => {
-  const isLiquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
-  const effect = tokens.theme.glassEffect[type];
-  const glassStyle = tokens.theme.glassStyle[type];
+export const GlassSurface = memo(
+  ({
+    type = 'secondary',
+    intensity,
+    tint,
+    style,
+    children,
+    isInteractive = false,
+    ...rest
+  }: GlassSurfaceProps) => {
+    const isLiquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
+    const effect =
+      tokens.theme.glassEffect[type] || tokens.theme.glassEffect.secondary;
+    const glassStyle =
+      tokens.theme.glassStyle[type] || tokens.theme.glassStyle.secondary;
 
-  if (isLiquidGlass) {
+    if (isLiquidGlass) {
+      return (
+        <View style={[styles.container, style]} {...rest}>
+          <GlassView
+            glassEffectStyle={glassStyle.style}
+            colorScheme={glassStyle.colorScheme}
+            isInteractive={isInteractive}
+            style={StyleSheet.absoluteFillObject}
+          />
+          {children}
+        </View>
+      );
+    }
+
     return (
-      <View style={[styles.container, style]} {...rest}>
-        <GlassView
-          glassEffectStyle={glassStyle.style}
-          colorScheme={glassStyle.colorScheme}
-          isInteractive={isInteractive}
-          style={StyleSheet.absoluteFillObject}
+      <BlurView
+        intensity={intensity ?? effect.intensity}
+        tint={tint ?? effect.tint}
+        style={[styles.container, style]}
+        {...rest}
+      >
+        <View
+          style={[
+            StyleSheet.absoluteFillObject,
+            {
+              backgroundColor:
+                type === 'primary' ? 'rgba(0,0,0,0.2)' : 'transparent',
+            },
+          ]}
         />
         {children}
-      </View>
+      </BlurView>
     );
   }
-
-  return (
-    <BlurView
-      intensity={intensity ?? effect.intensity}
-      tint={tint ?? effect.tint}
-      style={[styles.container, style]}
-      {...rest}
-    >
-      <View style={StyleSheet.absoluteFillObject} />
-      {children}
-    </BlurView>
-  );
-};
+);
 
 const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
-  }
+  },
 });

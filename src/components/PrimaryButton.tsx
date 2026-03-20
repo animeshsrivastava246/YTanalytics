@@ -1,6 +1,10 @@
-import React from 'react';
-import Animated, { useAnimatedStyle, withSpring, useSharedValue } from 'react-native-reanimated';
-import { Pressable, StyleSheet, ViewStyle } from 'react-native';
+import React, { memo } from 'react';
+import Animated, {
+  useAnimatedStyle,
+  withSpring,
+  useSharedValue,
+} from 'react-native-reanimated';
+import { Pressable, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { AppText } from './AppText';
 import { tokens } from '@/constants/tokens';
 
@@ -9,35 +13,54 @@ interface PrimaryButtonProps {
   onPress: () => void;
   variant?: 'solid' | 'glass';
   loading?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
-export const PrimaryButton = ({ label, onPress, variant = 'solid', loading, style }: PrimaryButtonProps) => {
-  const scale = useSharedValue(1);
+export const PrimaryButton = memo(
+  ({
+    label,
+    onPress,
+    variant = 'solid',
+    loading,
+    style,
+  }: PrimaryButtonProps) => {
+    const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }]
-  }));
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }],
+    }));
 
-  const handlePressIn = () => { scale.value = withSpring(0.96, { damping: 15, stiffness: 300 }); };
-  const handlePressOut = () => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }); };
+    const handlePressIn = () => {
+      scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
+    };
+    const handlePressOut = () => {
+      scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+    };
 
-  return (
-    <Animated.View style={[animatedStyle, style]}>
-      <Pressable 
-        onPress={onPress} 
-        onPressIn={handlePressIn} 
-        onPressOut={handlePressOut}
-        disabled={loading}
-        style={[styles.base, variant === 'solid' ? styles.solid : styles.glass]}
-      >
-        <AppText variant="subtitle" color={variant === 'solid' ? 'primary' : 'muted'} style={styles.text}>
-          {loading ? 'Wait...' : label}
-        </AppText>
-      </Pressable>
-    </Animated.View>
-  );
-};
+    return (
+      <Animated.View style={[animatedStyle, style]}>
+        <Pressable
+          onPress={onPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          disabled={loading}
+          style={[
+            styles.base,
+            variant === 'solid' ? styles.solid : styles.glass,
+          ]}
+        >
+          <AppText
+            variant="subtitle"
+            color={variant === 'solid' ? 'primary' : 'muted'}
+            style={styles.text}
+          >
+            {loading ? 'Wait...' : label}
+          </AppText>
+        </Pressable>
+      </Animated.View>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   base: {
@@ -55,5 +78,5 @@ const styles = StyleSheet.create({
   },
   text: {
     textAlign: 'center',
-  }
+  },
 });

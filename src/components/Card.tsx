@@ -1,24 +1,40 @@
-import React, { ReactNode } from 'react';
-import Animated, { useAnimatedStyle, withSpring, useSharedValue } from 'react-native-reanimated';
-import { Pressable, StyleSheet, ViewStyle, View } from 'react-native';
+import React, { ReactNode, memo } from 'react';
+import Animated, {
+  useAnimatedStyle,
+  withSpring,
+  useSharedValue,
+  FadeInUp,
+} from 'react-native-reanimated';
+import {
+  Pressable,
+  StyleSheet,
+  ViewStyle,
+  View,
+  StyleProp,
+} from 'react-native';
 import { GlassSurface } from './GlassSurface';
 import { tokens } from '@/constants/tokens';
 
 interface CardProps {
   onPress?: () => void;
   children: ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
+  index?: number;
 }
 
-export const Card = ({ onPress, children, style }: CardProps) => {
+export const Card = memo(({ onPress, children, style, index }: CardProps) => {
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }]
+    transform: [{ scale: scale.value }],
   }));
 
-  const handlePressIn = () => { scale.value = withSpring(0.98, { damping: 20, stiffness: 300 }); };
-  const handlePressOut = () => { scale.value = withSpring(1, { damping: 20, stiffness: 300 }); };
+  const handlePressIn = () => {
+    scale.value = withSpring(0.98, { damping: 20, stiffness: 300 });
+  };
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 20, stiffness: 300 });
+  };
 
   const content = (
     <GlassSurface type="secondary" style={styles.surface}>
@@ -27,7 +43,14 @@ export const Card = ({ onPress, children, style }: CardProps) => {
   );
 
   return (
-    <Animated.View style={[animatedStyle, styles.marginWrapper, style]}>
+    <Animated.View
+      entering={
+        index !== undefined
+          ? FadeInUp.delay(index * 100).springify()
+          : undefined
+      }
+      style={[animatedStyle, styles.marginWrapper, style]}
+    >
       {onPress ? (
         <Pressable
           onPress={onPress}
@@ -38,13 +61,11 @@ export const Card = ({ onPress, children, style }: CardProps) => {
           {content}
         </Pressable>
       ) : (
-        <View style={styles.pressableContainer}>
-          {content}
-        </View>
+        <View style={styles.pressableContainer}>{content}</View>
       )}
     </Animated.View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   marginWrapper: {
@@ -58,5 +79,5 @@ const styles = StyleSheet.create({
     padding: tokens.theme.spacing.lg,
     borderWidth: 1,
     borderColor: tokens.theme.colors.borderSubtle,
-  }
+  },
 });

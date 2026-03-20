@@ -1,4 +1,4 @@
-## React Native - YT analysis - PRD 
+## React Native - YT analysis - PRD
 
 ### Overview
 
@@ -11,7 +11,6 @@ Mobile app (React Native) to search YouTube videos/playlists and display key ana
 - Set playback speed (1x, 2x, 3x, etc.) to calculate adjusted total watch time.
 - Show likes, views, comments for videos; aggregate stats for playlists.
 - Real-time data fetching with caching to handle API rate limits.
-
 
 ### User Flow
 
@@ -28,7 +27,6 @@ Mobile app (React Native) to search YouTube videos/playlists and display key ana
 - **API:** YouTube Data API v3 — search, video, playlist endpoints
 - **Caching:** Use AsyncStorage/in-memory cache to reduce API calls
 - **No video playback** due to free API tier
-
 
 ### Wireframe Outline
 

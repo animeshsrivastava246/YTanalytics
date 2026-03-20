@@ -3,7 +3,7 @@
  */
 export function parseISO8601DurationToSeconds(duration: string): number {
   if (!duration) return 0;
-  
+
   const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
   if (!match) return 0;
 
@@ -25,7 +25,10 @@ export function sumDurations(secondsArray: number[]): number {
  * Computes the time it takes to watch `totalSeconds` at `playbackSpeed`.
  * Clamps speed to [0.25, 3] range per Phase 1 spec to prevent absurd values.
  */
-export function computeTotalTimeAtSpeed(totalSeconds: number, playbackSpeed: number): number {
+export function computeTotalTimeAtSpeed(
+  totalSeconds: number,
+  playbackSpeed: number
+): number {
   const clampedSpeed = Math.min(Math.max(playbackSpeed, 0.25), 3);
   return Math.round(totalSeconds / clampedSpeed);
 }
@@ -34,7 +37,10 @@ export function computeTotalTimeAtSpeed(totalSeconds: number, playbackSpeed: num
  * Computes how much time is saved (or lost) by watching at `playbackSpeed`.
  * Will be negative if speed < 1 (taking extra time).
  */
-export function computeTimeSaved(totalSeconds: number, playbackSpeed: number): number {
+export function computeTimeSaved(
+  totalSeconds: number,
+  playbackSpeed: number
+): number {
   const timeAtSpeed = computeTotalTimeAtSpeed(totalSeconds, playbackSpeed);
   return totalSeconds - timeAtSpeed;
 }
@@ -51,12 +57,14 @@ export function formatDuration(totalSeconds: number): string {
   const minutes = Math.floor((absoluteSeconds % 3600) / 60);
   const seconds = absoluteSeconds % 60;
 
-  const paddedMinutes = hours > 0 ? String(minutes).padStart(2, '0') : String(minutes);
+  const paddedMinutes =
+    hours > 0 ? String(minutes).padStart(2, '0') : String(minutes);
   const paddedSeconds = String(seconds).padStart(2, '0');
 
-  const formattedStr = hours > 0
-    ? `${hours}:${paddedMinutes}:${paddedSeconds}`
-    : `${paddedMinutes}:${paddedSeconds}`;
+  const formattedStr =
+    hours > 0
+      ? `${hours}:${paddedMinutes}:${paddedSeconds}`
+      : `${paddedMinutes}:${paddedSeconds}`;
 
   return isNegative ? `-${formattedStr}` : formattedStr;
 }

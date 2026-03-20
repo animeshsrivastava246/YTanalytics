@@ -23,7 +23,8 @@ export default function CombosScreen() {
   const renderEmpty = () => (
     <View style={styles.center}>
       <AppText variant="h3" color="muted" style={{ textAlign: 'center' }}>
-        You haven&apos;t saved any Combos yet.{'\n'}Tap the &apos;+&apos; button to build your first playlist.
+        You haven&apos;t saved any Combos yet.{'\n'}Tap the &apos;+&apos; button
+        to build your first playlist.
       </AppText>
     </View>
   );
@@ -31,23 +32,35 @@ export default function CombosScreen() {
   const renderItem = ({ item }: { item: CustomCombo }) => (
     <Card onPress={() => router.push(`/combo/${item.id}`)} style={styles.card}>
       <AppText variant="h2">{item.title}</AppText>
-      <AppText variant="body" color="muted">{item.items.length} items</AppText>
+      <AppText variant="body" color="muted">
+        {item.items.length} items
+      </AppText>
     </Card>
   );
 
   return (
     <View style={styles.container}>
-      <GlassSurface type="primary" style={[styles.header, { paddingTop: insets.top }]}>
+      <GlassSurface
+        type="primary"
+        style={[styles.header, { paddingTop: insets.top }]}
+      >
         <AppText variant="h1">Your Combos</AppText>
-        <IconButton icon={Plus} onPress={handleCreateCombo} glassType="tertiary" />
+        <IconButton
+          icon={Plus}
+          onPress={handleCreateCombo}
+          glassType="tertiary"
+        />
       </GlassSurface>
-      
+
       <FlatList
         data={combos}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         renderItem={renderItem}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 80 }]}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: insets.bottom + 80 },
+        ]}
       />
     </View>
   );
@@ -74,5 +87,5 @@ const styles = StyleSheet.create({
   },
   card: {
     padding: tokens.theme.spacing.lg,
-  }
+  },
 });

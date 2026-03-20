@@ -14,6 +14,7 @@ To achieve the "liquid glass" premium feel, YTanalytics animation philosophy is 
 ## Task 27: Per-Component Animation Specs
 
 ### 1. `PrimaryButton` / `IconButton`
+
 - **Trigger**: `onPressIn` / `onPressOut`
 - **Action**: Scale transform.
 - **Values**: `1` -> `0.95` -> `1`.
@@ -21,12 +22,14 @@ To achieve the "liquid glass" premium feel, YTanalytics animation philosophy is 
 - **Implementation**: Reanimated hooks or `react-native-ease`.
 
 ### 2. `Chip` (Filter toggles)
+
 - **Trigger**: `onPress`
 - **Action**: Scale down slightly and crossfade background color.
 - **Values**: Scale `1` -> `0.92` -> `1`. Background color interpolates between `SurfaceSecondary` and `AccentSecondary`.
 - **Physics**: Interpolated timing (e.g., `withTiming(..., { duration: 150 })`).
 
 ### 3. List Item / `Card` Entrance
+
 - **Trigger**: On mount (when data resolves from query).
 - **Action**: Staggered fade and slide up.
 - **Values**: Opacity `0` -> `1`. TranslateY `20` -> `0`.
@@ -34,6 +37,7 @@ To achieve the "liquid glass" premium feel, YTanalytics animation philosophy is 
 - **Implementation**: Reanimated `FadeInDown.delay(index * 50).springify()`.
 
 ### 4. Bottom Sheets (Modals / Combo Builder)
+
 - **Trigger**: User action opening a modal.
 - **Action**: Slide up from bottom of screen, pulling a dark overlay behind it.
 - **Values**: TranslateY `ScreenHeight` -> `0`. Backdrop Opacity `0` -> `0.6`.

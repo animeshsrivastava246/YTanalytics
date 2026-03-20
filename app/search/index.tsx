@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassSurface } from '@/components/GlassSurface';
@@ -11,34 +17,38 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { tokens } from '@/constants/tokens';
 import { Image } from 'expo-image';
 
+import { RawYouTubeSearchItem } from '@/services/youtube.types';
+
 type SearchType = 'video' | 'playlist' | 'channel';
 
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  
+
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebounce(query, 500);
   const [type, setType] = useState<SearchType>('video');
 
   const { data, isLoading, isError } = useSearch(debouncedQuery, type);
 
-  const handlePress = (item: any) => {
+  const handlePress = (item: RawYouTubeSearchItem) => {
     if (type === 'video') router.push(`/video/${item.id?.videoId}`);
     if (type === 'playlist') router.push(`/playlist/${item.id?.playlistId}`);
     if (type === 'channel') router.push(`/channel/${item.id?.channelId}`);
   };
 
-  const renderItem = ({ item }: { item: any }) => (
+  const renderItem = ({ item }: { item: RawYouTubeSearchItem }) => (
     <Card onPress={() => handlePress(item)} style={styles.card}>
       <View style={styles.row}>
-        <Image 
-          source={{ uri: item.snippet?.thumbnails?.high?.url || '' }} 
-          style={type === 'channel' ? styles.avatar : styles.thumbnail} 
+        <Image
+          source={{ uri: item.snippet?.thumbnails?.high?.url || '' }}
+          style={type === 'channel' ? styles.avatar : styles.thumbnail}
           contentFit="cover"
         />
         <View style={styles.info}>
-          <AppText variant="subtitle" numberOfLines={2}>{item.snippet?.title}</AppText>
+          <AppText variant="subtitle" numberOfLines={2}>
+            {item.snippet?.title}
+          </AppText>
           <AppText variant="caption" color="muted" style={styles.channelName}>
             {item.snippet?.channelTitle || 'Unknown Channel'}
           </AppText>
@@ -49,7 +59,10 @@ export default function SearchScreen() {
 
   return (
     <View style={styles.container}>
-      <GlassSurface type="primary" style={[styles.header, { paddingTop: insets.top }]}>
+      <GlassSurface
+        type="primary"
+        style={[styles.header, { paddingTop: insets.top }]}
+      >
         <TextInput
           style={styles.input}
           placeholder="Search YouTube..."
@@ -59,24 +72,59 @@ export default function SearchScreen() {
           autoFocus
         />
         <View style={styles.filters}>
-          <Chip label="Videos" selected={type === 'video'} onPress={() => setType('video')} />
-          <Chip label="Playlists" selected={type === 'playlist'} onPress={() => setType('playlist')} />
-          <Chip label="Channels" selected={type === 'channel'} onPress={() => setType('channel')} />
+          <Chip
+            label="Videos"
+            selected={type === 'video'}
+            onPress={() => setType('video')}
+          />
+          <Chip
+            label="Playlists"
+            selected={type === 'playlist'}
+            onPress={() => setType('playlist')}
+          />
+          <Chip
+            label="Channels"
+            selected={type === 'channel'}
+            onPress={() => setType('channel')}
+          />
         </View>
       </GlassSurface>
 
       <View style={styles.listContainer}>
-        {isLoading && <ActivityIndicator size="large" color={tokens.theme.colors.accentPrimary} style={styles.center} />}
-        {isError && <AppText variant="body" color="error" style={styles.center}>Error fetching results.</AppText>}
-        {!isLoading && !isError && debouncedQuery && (!data?.items || data.items.length === 0) && (
-          <AppText variant="body" color="muted" style={styles.center}>No results found.</AppText>
+        {isLoading && (
+          <ActivityIndicator
+            size="large"
+            color={tokens.theme.colors.accentPrimary}
+            style={styles.center}
+          />
         )}
-        
+        {isError && (
+          <AppText variant="body" color="error" style={styles.center}>
+            Error fetching results.
+          </AppText>
+        )}
+        {!isLoading &&
+          !isError &&
+          debouncedQuery &&
+          (!data?.items || data.items.length === 0) && (
+            <AppText variant="body" color="muted" style={styles.center}>
+              No results found.
+            </AppText>
+          )}
+
         <FlatList
           data={data?.items || []}
-          keyExtractor={(item, index) => item.id?.videoId || item.id?.playlistId || item.id?.channelId || String(index)}
+          keyExtractor={(item, index) =>
+            item.id?.videoId ||
+            item.id?.playlistId ||
+            item.id?.channelId ||
+            String(index)
+          }
           renderItem={renderItem}
-          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 80 }]}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: insets.bottom + 80 },
+          ]}
           showsVerticalScrollIndicator={false}
         />
       </View>
@@ -105,8 +153,18 @@ const styles = StyleSheet.create({
   center: { marginTop: 40, textAlign: 'center' },
   card: { padding: 0 },
   row: { flexDirection: 'row', alignItems: 'flex-start' },
-  thumbnail: { width: 120, height: 68, borderRadius: tokens.theme.radii.sm, marginRight: tokens.theme.spacing.md },
-  avatar: { width: 68, height: 68, borderRadius: 34, marginRight: tokens.theme.spacing.md },
+  thumbnail: {
+    width: 120,
+    height: 68,
+    borderRadius: tokens.theme.radii.sm,
+    marginRight: tokens.theme.spacing.md,
+  },
+  avatar: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    marginRight: tokens.theme.spacing.md,
+  },
   info: { flex: 1, justifyContent: 'center' },
   channelName: { marginTop: 4 },
 });

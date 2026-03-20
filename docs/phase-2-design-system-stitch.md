@@ -5,6 +5,7 @@
 To maintain a highly consistent "iOS Liquid Glass" aesthetic, we define the following semantic design tokens. These tokens should be fed to Stitch MCP when generating screens to keep components uniform.
 
 **Colors**
+
 - `surfaceBg`: Deep black/dark gray for dark mode (`#000000`), Light gray for light mode (`#F2F2F7`).
 - `surfaceGlassPrimary`: Base color for heavy glass (e.g., `#1C1C1E` at 75% opacity).
 - `surfaceGlassSecondary`: Base color for lighter glass cards (`#2C2C2E` at 65% opacity).
@@ -16,6 +17,7 @@ To maintain a highly consistent "iOS Liquid Glass" aesthetic, we define the foll
 - `success`, `warning`, `error`: Standard iOS semantic colors (`#34C759`, `#FF9500`, `#FF3B30`).
 
 **Typography Scale (iOS HIG)**
+
 - `H1`: 34px, Bold (700)
 - `H2`: 28px, Semibold (600)
 - `H3`: 22px, Semibold (600)
@@ -25,10 +27,12 @@ To maintain a highly consistent "iOS Liquid Glass" aesthetic, we define the foll
 - `caption`: 13px, Regular (400)
 
 **Spacing & Layout**
+
 - Based on a 4pt/8pt grid system.
 - Spacing steps: 4, 8, 12, 16, 24, 32, 48, 64px.
 
 **Radii**
+
 - `xs`: 4px
 - `sm`: 8px
 - `md`: 12px
@@ -105,4 +109,5 @@ Tokens should be formatted in a JSON-like structure that seamlessly plugs into t
   }
 }
 ```
-*Note: The `glassEffect` node is not standard Tailwind; it's read by custom React components wrapping `Expo.BlurView`.*
+
+_Note: The `glassEffect` node is not standard Tailwind; it's read by custom React components wrapping `Expo.BlurView`._

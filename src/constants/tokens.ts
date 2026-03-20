@@ -49,10 +49,18 @@ export const tokens = {
       tertiary: { intensity: 50, tint: 'default' as BlurTint },
     },
     glassStyle: {
-      primary: { style: 'regular' as GlassStyle, colorScheme: 'dark' as GlassColorScheme },
-      secondary: { style: 'regular' as GlassStyle, colorScheme: 'auto' as GlassColorScheme },
-      tertiary: { style: 'clear' as GlassStyle, colorScheme: 'auto' as GlassColorScheme },
+      primary: {
+        style: 'regular' as GlassStyle,
+        colorScheme: 'dark' as GlassColorScheme,
+      },
+      secondary: {
+        style: 'regular' as GlassStyle,
+        colorScheme: 'auto' as GlassColorScheme,
+      },
+      tertiary: {
+        style: 'clear' as GlassStyle,
+        colorScheme: 'auto' as GlassColorScheme,
+      },
     },
   },
 };
-
