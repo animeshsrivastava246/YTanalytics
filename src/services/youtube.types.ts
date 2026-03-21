@@ -37,6 +37,7 @@ export interface AppChannel {
   thumbnail: AppThumbnail;
   subscriberCount?: number;
   videoCount?: number;
+  uploadsPlaylistId?: string;
 }
 
 export interface AppCommentThread {
@@ -118,6 +119,11 @@ export interface RawYouTubeChannelItem {
   statistics?: {
     subscriberCount?: string;
     videoCount?: string;
+  };
+  contentDetails?: {
+    relatedPlaylists?: {
+      uploads?: string;
+    };
   };
 }
 

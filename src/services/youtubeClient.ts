@@ -163,9 +163,9 @@ export const youtubeClient = {
     const { data } = await api.get('/channels', {
       params: {
         id: ids.join(','),
-        part: 'snippet,statistics',
+        part: 'snippet,statistics,contentDetails',
         fields:
-          'items(id,snippet(title,description,thumbnails/high),statistics(subscriberCount,videoCount))',
+          'items(id,snippet(title,description,thumbnails/high),statistics(subscriberCount,videoCount),contentDetails(relatedPlaylists(uploads)))',
       },
     });
 
@@ -184,6 +184,7 @@ export const youtubeClient = {
       videoCount: item.statistics?.videoCount
         ? parseInt(item.statistics.videoCount, 10)
         : 0,
+      uploadsPlaylistId: item.contentDetails?.relatedPlaylists?.uploads,
     }));
   },
 
