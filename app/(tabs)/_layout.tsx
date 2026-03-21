@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
-import { BlurView } from 'expo-blur';
+import { GlassSurface } from '@/components/GlassSurface';
 import { Home, ListVideo, Settings } from 'lucide-react-native';
 
 export default function TabLayout() {
@@ -15,11 +15,7 @@ export default function TabLayout() {
           backgroundColor: 'transparent',
         },
         tabBarBackground: () => (
-          <BlurView
-            intensity={100}
-            tint="dark"
-            style={StyleSheet.absoluteFill}
-          />
+          <GlassSurface type="primary" style={StyleSheet.absoluteFill} />
         ),
         tabBarActiveTintColor: '#FF3B30', // accentPrimary
         tabBarInactiveTintColor: '#8E8E93', // textMuted

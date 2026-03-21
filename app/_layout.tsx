@@ -1,14 +1,14 @@
-import { Stack } from 'expo-router';
-import { StyleSheet, Alert } from 'react-native';
+import { tokens } from '@/constants/tokens';
 import {
+  QueryCache,
   QueryClient,
   QueryClientProvider,
-  QueryCache,
 } from '@tanstack/react-query';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { tokens } from '@/constants/tokens';
+import { Alert, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -36,7 +36,10 @@ export default function RootLayout() {
             }}
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="search" options={{ presentation: 'modal' }} />
+            <Stack.Screen
+              name="search/index"
+              options={{ presentation: 'modal' }}
+            />
           </Stack>
         </QueryClientProvider>
       </SafeAreaProvider>
