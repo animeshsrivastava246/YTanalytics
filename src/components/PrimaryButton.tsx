@@ -13,6 +13,7 @@ interface PrimaryButtonProps {
   onPress: () => void;
   variant?: 'solid' | 'glass';
   loading?: boolean;
+  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -22,6 +23,7 @@ export const PrimaryButton = memo(
     onPress,
     variant = 'solid',
     loading,
+    disabled,
     style,
   }: PrimaryButtonProps) => {
     const scale = useSharedValue(1);
@@ -43,7 +45,7 @@ export const PrimaryButton = memo(
           onPress={onPress}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
-          disabled={loading}
+          disabled={loading || disabled}
           style={[
             styles.base,
             variant === 'solid' ? styles.solid : styles.glass,
@@ -52,7 +54,7 @@ export const PrimaryButton = memo(
           <AppText
             variant="subtitle"
             color={variant === 'solid' ? 'primary' : 'muted'}
-            style={styles.text}
+            style={[styles.text, (loading || disabled) && styles.textDisabled]}
           >
             {loading ? 'Wait...' : label}
           </AppText>
@@ -78,5 +80,8 @@ const styles = StyleSheet.create({
   },
   text: {
     textAlign: 'center',
+  },
+  textDisabled: {
+    opacity: 0.6,
   },
 });

@@ -3,7 +3,7 @@ import { View, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Clock, Video } from 'lucide-react-native';
-import { Image } from 'expo-image';
+
 import { AppText } from '@/components/AppText';
 import { IconButton } from '@/components/IconButton';
 import { GlassSurface } from '@/components/GlassSurface';
@@ -12,7 +12,9 @@ import { StatPill } from '@/components/StatPill';
 import { usePlaylist, usePlaylistItems, useVideos } from '@/hooks/useYouTube';
 import { useWatchTime } from '@/hooks/useWatchTime';
 import { tokens } from '@/constants/tokens';
+import { ResultRow } from '@/features/search/components/ResultRow';
 import { RawYouTubePlaylistItemDetails } from '@/services/youtube.types';
+import { PlaylistHero } from './components/PlaylistHero';
 
 export function PlaylistDetail({ id }: { id: string }) {
   const router = useRouter();
@@ -67,29 +69,10 @@ export function PlaylistDetail({ id }: { id: string }) {
       style={styles.container}
       contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
     >
-      <View style={styles.heroContainer}>
-        <Image
-          source={{ uri: playlist.thumbnail.url }}
-          style={styles.heroImageBlur}
-          blurRadius={40}
-          contentFit="cover"
-        />
-        <View style={styles.heroImageOverlay} />
-
-        <View style={[styles.headerOverlay, { top: insets.top }]}>
-          <IconButton
-            icon={ArrowLeft}
-            onPress={() => router.back()}
-            glassType="tertiary"
-          />
-        </View>
-
-        <Image
-          source={{ uri: playlist.thumbnail.url }}
-          style={styles.heroImageClear}
-          contentFit="contain"
-        />
-      </View>
+      <PlaylistHero
+        thumbnailUrl={playlist.thumbnail.url}
+        topInset={insets.top}
+      />
 
       <View style={styles.content}>
         <AppText variant="h2" style={styles.title}>
@@ -106,7 +89,7 @@ export function PlaylistDetail({ id }: { id: string }) {
         <GlassSurface type="secondary" style={styles.timeCard}>
           <View style={styles.timeHeader}>
             <Clock size={20} color={tokens.theme.colors.textPrimary} />
-            <AppText variant="subtitle" style={{ marginLeft: 8 }}>
+            <AppText variant="subtitle" style={styles.timeHeaderLabel}>
               Total Playlist Duration: {watchTime.totalFormatted}
             </AppText>
           </View>
@@ -155,6 +138,23 @@ export function PlaylistDetail({ id }: { id: string }) {
         <AppText variant="body" color="muted" style={styles.description}>
           {playlist.description}
         </AppText>
+
+        <View style={styles.videoList}>
+          <AppText variant="h3" style={styles.listTitle}>
+            Videos
+          </AppText>
+          {videos && videos.length > 0 ? (
+            videos.map((video) => (
+              <View key={video.id} style={styles.videoRowWrapper}>
+                <ResultRow item={video} type="video" />
+              </View>
+            ))
+          ) : (
+            <AppText variant="body" color="muted" style={styles.center}>
+              No videos found in this playlist.
+            </AppText>
+          )}
+        </View>
       </View>
     </ScrollView>
   );
@@ -163,56 +163,51 @@ export function PlaylistDetail({ id }: { id: string }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: tokens.theme.colors.surfaceBg },
   center: { justifyContent: 'center', alignItems: 'center' },
-  heroContainer: {
-    width: '100%',
-    height: 300,
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  heroImageBlur: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    opacity: 0.5,
-  },
-  heroImageOverlay: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  heroImageClear: {
-    width: '80%',
-    height: '60%',
-    borderRadius: tokens.theme.radii.md,
-    zIndex: 5,
-    marginTop: 40,
-  },
-  headerOverlay: { position: 'absolute', top: 40, left: 16, zIndex: 10 },
+
   content: { padding: tokens.theme.spacing.lg },
-  title: { marginBottom: 4 },
-  channel: { marginBottom: 16 },
+  title: { marginBottom: tokens.theme.spacing.xs },
+  channel: { marginBottom: tokens.theme.spacing.xl },
   statsRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 24,
+    gap: tokens.theme.spacing.sm,
+    marginBottom: tokens.theme.spacing.xxl,
     flexWrap: 'wrap',
   },
   timeCard: {
-    padding: 16,
+    padding: tokens.theme.spacing.xl,
     borderRadius: tokens.theme.radii.lg,
-    marginBottom: 24,
+    marginBottom: tokens.theme.spacing.xxl,
   },
-  timeHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  speedLabel: { marginBottom: 8, marginLeft: 4 },
-  speedRow: { marginBottom: 16 },
+  timeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: tokens.theme.spacing.xl,
+  },
+  timeHeaderLabel: { marginLeft: tokens.theme.spacing.sm },
+  speedLabel: {
+    marginBottom: tokens.theme.spacing.sm,
+    marginLeft: tokens.theme.spacing.xs,
+  },
+  speedRow: { marginBottom: tokens.theme.spacing.xl },
   timeResult: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: tokens.theme.spacing.md,
     borderTopWidth: 1,
     borderTopColor: tokens.theme.colors.borderSubtle,
   },
-  savedResult: { marginTop: 4 },
-  description: { marginTop: 16, lineHeight: 24 },
+  savedResult: { marginTop: tokens.theme.spacing.xs },
+  description: {
+    marginTop: tokens.theme.spacing.xl,
+    lineHeight: 24,
+    marginBottom: tokens.theme.spacing.xxl,
+  },
+  videoList: {
+    marginTop: tokens.theme.spacing.lg,
+  },
+  listTitle: {
+    marginBottom: tokens.theme.spacing.md,
+  },
+  videoRowWrapper: {
+    marginBottom: tokens.theme.spacing.sm,
+  },
 });

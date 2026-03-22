@@ -3,12 +3,12 @@ import { View, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Trash2, Clock } from 'lucide-react-native';
-import { Image } from 'expo-image';
 import { AppText } from '@/components/AppText';
 import { IconButton } from '@/components/IconButton';
 import { GlassSurface } from '@/components/GlassSurface';
 import { Chip } from '@/components/Chip';
 import { useComboStore } from '@/features/combos/useComboStore';
+import { ComboItemRow } from '@/features/combos/components/ComboItemRow';
 import { useVideos } from '@/hooks/useYouTube';
 import { useWatchTime } from '@/hooks/useWatchTime';
 import { tokens } from '@/constants/tokens';
@@ -17,7 +17,7 @@ export default function ComboDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { combos, deleteCombo } = useComboStore();
+  const { combos, deleteCombo, updateCombo } = useComboStore();
 
   const [speed, setSpeed] = useState<number>(1);
   const combo = combos.find((c) => c.id === id);
@@ -93,7 +93,7 @@ export default function ComboDetailScreen() {
         <GlassSurface type="secondary" style={styles.timeCard}>
           <View style={styles.timeHeader}>
             <Clock size={20} color={tokens.theme.colors.textPrimary} />
-            <AppText variant="subtitle" style={{ marginLeft: 8 }}>
+            <AppText variant="subtitle" style={styles.timeHeaderLabel}>
               Internal Duration: {watchTime.totalFormatted}
             </AppText>
           </View>
@@ -125,24 +125,32 @@ export default function ComboDetailScreen() {
           Items ({combo.items.length})
         </AppText>
         {combo.items.map((item, index) => (
-          <View key={index} style={styles.itemRow}>
-            {item.thumbnailUrl ? (
-              <Image
-                source={{ uri: item.thumbnailUrl }}
-                style={styles.thumbnail}
-              />
-            ) : (
-              <View
-                style={[
-                  styles.thumbnail,
-                  { backgroundColor: tokens.theme.colors.glassSecondary },
-                ]}
-              />
-            )}
-            <AppText variant="body" numberOfLines={2} style={styles.itemTitle}>
-              {item.title}
-            </AppText>
-          </View>
+          <ComboItemRow
+            key={`${item.id}-${index}`}
+            item={item}
+            index={index}
+            totalItems={combo.items.length}
+            onMoveUp={() => {
+              const newItems = [...combo.items];
+              [newItems[index - 1], newItems[index]] = [
+                newItems[index],
+                newItems[index - 1],
+              ];
+              updateCombo(combo.id, { items: newItems });
+            }}
+            onMoveDown={() => {
+              const newItems = [...combo.items];
+              [newItems[index + 1], newItems[index]] = [
+                newItems[index],
+                newItems[index + 1],
+              ];
+              updateCombo(combo.id, { items: newItems });
+            }}
+            onRemove={() => {
+              const newItems = combo.items.filter((_, i) => i !== index);
+              updateCombo(combo.id, { items: newItems });
+            }}
+          />
         ))}
       </ScrollView>
     </View>
@@ -156,27 +164,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    paddingBottom: 12,
+    paddingHorizontal: tokens.theme.spacing.sm,
+    paddingBottom: tokens.theme.spacing.md,
   },
-  title: { flex: 1, textAlign: 'center', marginHorizontal: 16 },
-  content: { padding: 16 },
+  title: {
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: tokens.theme.spacing.lg,
+  },
+  content: { padding: tokens.theme.spacing.lg },
   timeCard: {
-    padding: 16,
+    padding: tokens.theme.spacing.xl,
     borderRadius: tokens.theme.radii.lg,
-    marginBottom: 24,
+    marginBottom: tokens.theme.spacing.xxl,
   },
-  timeHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  speedRow: { marginBottom: 16 },
+  timeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: tokens.theme.spacing.xl,
+  },
+  timeHeaderLabel: { marginLeft: tokens.theme.spacing.sm },
+  speedRow: { marginBottom: tokens.theme.spacing.xl },
   timeResult: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: tokens.theme.spacing.md,
     borderTopWidth: 1,
     borderTopColor: tokens.theme.colors.borderSubtle,
   },
-  savedResult: { marginTop: 4 },
-  listTitle: { marginBottom: 12 },
-  itemRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  thumbnail: { width: 80, height: 45, borderRadius: 4, marginRight: 12 },
-  itemTitle: { flex: 1 },
+  savedResult: { marginTop: tokens.theme.spacing.xs },
+  listTitle: { marginBottom: tokens.theme.spacing.md },
 });

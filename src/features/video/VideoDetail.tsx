@@ -18,6 +18,7 @@ import { StatPill } from '@/components/StatPill';
 import { useVideo } from '@/hooks/useYouTube';
 import { useWatchTime } from '@/hooks/useWatchTime';
 import { tokens } from '@/constants/tokens';
+import { formatStat } from '@/utils/format';
 
 export function VideoDetail({ id }: { id: string }) {
   const router = useRouter();
@@ -94,7 +95,7 @@ export function VideoDetail({ id }: { id: string }) {
         <GlassSurface type="secondary" style={styles.timeCard}>
           <View style={styles.timeHeader}>
             <Clock size={20} color={tokens.theme.colors.textPrimary} />
-            <AppText variant="subtitle" style={{ marginLeft: 8 }}>
+            <AppText variant="subtitle" style={styles.timeHeaderLabel}>
               Base Duration: {watchTime.totalFormatted}
             </AppText>
           </View>
@@ -135,42 +136,47 @@ export function VideoDetail({ id }: { id: string }) {
   );
 }
 
-function formatStat(num?: number): string {
-  if (!num) return '0';
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-  return num.toString();
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: tokens.theme.colors.surfaceBg },
   center: { justifyContent: 'center', alignItems: 'center' },
   heroContainer: { width: '100%', height: 260, position: 'relative' },
   heroImage: { width: '100%', height: '100%' },
-  headerOverlay: { position: 'absolute', top: 40, left: 16, zIndex: 10 },
+  headerOverlay: {
+    position: 'absolute',
+    left: tokens.theme.spacing.lg,
+    zIndex: 10,
+  },
   content: { padding: tokens.theme.spacing.lg },
-  title: { marginBottom: 4 },
-  channel: { marginBottom: 16 },
+  title: { marginBottom: tokens.theme.spacing.xs },
+  channel: { marginBottom: tokens.theme.spacing.xl },
   statsRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 24,
+    gap: tokens.theme.spacing.sm,
+    marginBottom: tokens.theme.spacing.xxl,
     flexWrap: 'wrap',
   },
   timeCard: {
-    padding: 16,
+    padding: tokens.theme.spacing.xl,
     borderRadius: tokens.theme.radii.lg,
-    marginBottom: 24,
+    marginBottom: tokens.theme.spacing.xxl,
   },
-  timeHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  speedLabel: { marginBottom: 8, marginLeft: 4 },
-  speedRow: { marginBottom: 16 },
+  timeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: tokens.theme.spacing.xl,
+  },
+  timeHeaderLabel: { marginLeft: tokens.theme.spacing.sm },
+  speedLabel: {
+    marginBottom: tokens.theme.spacing.sm,
+    marginLeft: tokens.theme.spacing.xs,
+  },
+  speedRow: { marginBottom: tokens.theme.spacing.xl },
   timeResult: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: tokens.theme.spacing.md,
     borderTopWidth: 1,
     borderTopColor: tokens.theme.colors.borderSubtle,
   },
-  savedResult: { marginTop: 4 },
-  description: { marginTop: 16, lineHeight: 24 },
+  savedResult: { marginTop: tokens.theme.spacing.xs },
+  description: { marginTop: tokens.theme.spacing.xl, lineHeight: 24 },
 });

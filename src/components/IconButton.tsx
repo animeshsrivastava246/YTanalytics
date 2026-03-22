@@ -13,7 +13,7 @@ interface IconButtonProps {
   icon: LucideIcon;
   size?: number;
   color?: string;
-  onPress: () => void;
+  onPress?: () => void;
   glassType?: 'tertiary' | 'none';
   style?: StyleProp<ViewStyle>;
 }

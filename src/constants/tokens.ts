@@ -13,6 +13,8 @@ export const tokens = {
       textPrimary: '#FFFFFF',
       textMuted: '#8E8E93',
       borderSubtle: 'rgba(255,255,255,0.15)',
+      scrimDark: 'rgba(0,0,0,0.4)',
+      scrimLight: 'rgba(0,0,0,0.2)',
       success: '#34C759',
       warning: '#FF9500',
       error: '#FF3B30',

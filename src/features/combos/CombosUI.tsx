@@ -16,15 +16,15 @@ export function CombosUI() {
   const router = useRouter();
 
   const handleCreateCombo = () => {
-    // In a full implementation, this opens a modal builder
-    useComboStore.getState().addCombo('My New Combo', []);
+    router.push('/combo/builder');
   };
 
   const renderEmpty = () => (
     <View style={styles.center}>
       <AppText variant="h3" color="muted" style={{ textAlign: 'center' }}>
-        You haven&apos;t saved any Combos yet.{'\n'}Tap the &apos;+&apos; button
-        to build your first playlist.
+        {
+          "You haven't saved any Combos yet.\nTap the '+' button to build your first playlist."
+        }
       </AppText>
     </View>
   );

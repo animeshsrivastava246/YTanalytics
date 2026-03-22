@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { GlassSurface } from '@/components/GlassSurface';
 import { Home, ListVideo, Settings } from 'lucide-react-native';
+import { tokens } from '@/constants/tokens';
 
 export default function TabLayout() {
   return (
@@ -17,8 +18,8 @@ export default function TabLayout() {
         tabBarBackground: () => (
           <GlassSurface type="primary" style={StyleSheet.absoluteFill} />
         ),
-        tabBarActiveTintColor: '#FF3B30', // accentPrimary
-        tabBarInactiveTintColor: '#8E8E93', // textMuted
+        tabBarActiveTintColor: tokens.theme.colors.accentPrimary,
+        tabBarInactiveTintColor: tokens.theme.colors.textMuted,
       }}
     >
       <Tabs.Screen
