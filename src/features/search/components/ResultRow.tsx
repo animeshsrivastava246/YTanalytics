@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
@@ -28,12 +28,13 @@ interface ResultRowProps {
         durationFormatted?: string;
       };
   type: SearchType;
+  index?: number;
 }
 
-export function ResultRow({ item, type }: ResultRowProps) {
+export const ResultRow = memo(({ item, type, index }: ResultRowProps) => {
   const router = useRouter();
 
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     const rawId = item.id;
     let finalId = '';
 
@@ -57,7 +58,7 @@ export function ResultRow({ item, type }: ResultRowProps) {
     } else if (type === 'channel') {
       router.push(`/channel/${finalId}`);
     }
-  };
+  }, [item.id, type, router]);
 
   const safeItem = item as Record<string, unknown>;
   const title = item.snippet?.title || (safeItem.title as string | undefined);
@@ -70,7 +71,7 @@ export function ResultRow({ item, type }: ResultRowProps) {
   const durationFormatted = safeItem.durationFormatted as string | undefined;
 
   return (
-    <Card onPress={handlePress} contentStyle={styles.card}>
+    <Card onPress={handlePress} contentStyle={styles.card} index={index}>
       <View style={styles.row}>
         <View style={styles.thumbnailContainer}>
           <Image
@@ -78,7 +79,7 @@ export function ResultRow({ item, type }: ResultRowProps) {
             style={type === 'channel' ? styles.avatar : styles.thumbnail}
             contentFit="cover"
           />
-          {type === 'video' && durationFormatted && (
+          {type === 'video' && !!durationFormatted && (
             <StatPill value={durationFormatted} style={styles.durationBadge} />
           )}
         </View>
@@ -93,7 +94,7 @@ export function ResultRow({ item, type }: ResultRowProps) {
       </View>
     </Card>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: { padding: tokens.theme.spacing.md },

@@ -64,7 +64,7 @@ export function ComboBuilderModal() {
   );
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <GlassSurface type="primary" style={styles.header}>
         <IconButton icon={ArrowLeft} onPress={() => router.back()} />
         <AppText variant="h3" style={styles.headerTitle}>

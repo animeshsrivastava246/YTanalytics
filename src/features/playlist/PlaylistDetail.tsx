@@ -144,9 +144,9 @@ export function PlaylistDetail({ id }: { id: string }) {
             Videos
           </AppText>
           {videos && videos.length > 0 ? (
-            videos.map((video) => (
+            videos.map((video, index) => (
               <View key={video.id} style={styles.videoRowWrapper}>
-                <ResultRow item={video} type="video" />
+                <ResultRow item={video} type="video" index={index} />
               </View>
             ))
           ) : (

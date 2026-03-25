@@ -1,12 +1,13 @@
-import React, { memo } from 'react';
+import { tokens } from '@/constants/tokens';
+import * as Haptics from 'expo-haptics';
+import React, { memo, useCallback } from 'react';
+import { Pressable, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
-  withSpring,
   useSharedValue,
+  withSpring,
 } from 'react-native-reanimated';
-import { Pressable, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { AppText } from './AppText';
-import { tokens } from '@/constants/tokens';
 
 interface PrimaryButtonProps {
   label: string;
@@ -26,29 +27,46 @@ export const PrimaryButton = memo(
     disabled,
     style,
   }: PrimaryButtonProps) => {
-    const scale = useSharedValue(1);
+    const pressed = useSharedValue(0);
+
+    const handlePressIn = useCallback(() => {
+      pressed.value = withSpring(1, {
+        mass: 1,
+        damping: 15,
+        stiffness: 300,
+      });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }, [pressed]);
+
+    const handlePressOut = useCallback(() => {
+      pressed.value = withSpring(0, {
+        mass: 1,
+        damping: 15,
+        stiffness: 300,
+      });
+    }, [pressed]);
 
     const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: scale.value }],
+      transform: [
+        {
+          scale: 1 - pressed.value * 0.05, // 1 to 0.95
+        },
+      ],
     }));
 
-    const handlePressIn = () => {
-      scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
-    };
-    const handlePressOut = () => {
-      scale.value = withSpring(1, { damping: 15, stiffness: 300 });
-    };
-
     return (
-      <Animated.View style={[animatedStyle, style]}>
-        <Pressable
-          onPress={onPress}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          disabled={loading || disabled}
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled || loading}
+      >
+        <Animated.View
           style={[
             styles.base,
             variant === 'solid' ? styles.solid : styles.glass,
+            animatedStyle,
+            style,
           ]}
         >
           <AppText
@@ -58,8 +76,8 @@ export const PrimaryButton = memo(
           >
             {loading ? 'Wait...' : label}
           </AppText>
-        </Pressable>
-      </Animated.View>
+        </Animated.View>
+      </Pressable>
     );
   }
 );

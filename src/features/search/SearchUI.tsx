@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   TextInput,
@@ -27,8 +27,11 @@ export function SearchUI() {
 
   const { data, isLoading, isError } = useSearch(debouncedQuery, type);
 
-  const renderItem = ({ item }: { item: RawYouTubeSearchItem }) => (
-    <ResultRow item={item} type={type} />
+  const renderItem = useCallback(
+    ({ item, index }: { item: RawYouTubeSearchItem; index: number }) => (
+      <ResultRow item={item} type={type} index={index} />
+    ),
+    [type]
   );
 
   return (

@@ -1,10 +1,17 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import Animated, {
   useAnimatedStyle,
   withSpring,
   useSharedValue,
 } from 'react-native-reanimated';
-import { Pressable, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import {
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+  View,
+  Pressable,
+} from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { LucideIcon } from 'lucide-react-native';
 import { GlassSurface } from './GlassSurface';
 import { tokens } from '@/constants/tokens';
@@ -27,42 +34,66 @@ export const IconButton = memo(
     glassType = 'tertiary',
     style,
   }: IconButtonProps) => {
-    const scale = useSharedValue(1);
+    const pressed = useSharedValue(0);
+
+    const handlePressIn = useCallback(() => {
+      pressed.value = withSpring(1, {
+        mass: 1,
+        damping: 15,
+        stiffness: 300,
+      });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }, [pressed]);
+
+    const handlePressOut = useCallback(() => {
+      pressed.value = withSpring(0, {
+        mass: 1,
+        damping: 15,
+        stiffness: 300,
+      });
+    }, [pressed]);
 
     const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: scale.value }],
+      transform: [
+        {
+          scale: 1 - pressed.value * 0.05, // 1 to 0.95
+        },
+      ],
     }));
-
-    const handlePressIn = () => {
-      scale.value = withSpring(0.96, { damping: 20, stiffness: 300 });
-    };
-    const handlePressOut = () => {
-      scale.value = withSpring(1, { damping: 20, stiffness: 300 });
-    };
 
     const iconColor = color || tokens.theme.colors.textPrimary;
 
     const content = (
+      <View style={[styles.base, style]}>
+        <Icon size={size} color={iconColor} />
+      </View>
+    );
+
+    const renderInner = () => {
+      if (glassType === 'none') {
+        return <Animated.View style={animatedStyle}>{content}</Animated.View>;
+      }
+      return (
+        <Animated.View style={[animatedStyle, styles.glassWrapper]}>
+          <GlassSurface
+            type={glassType}
+            isInteractive={!!onPress}
+            style={styles.glassSurface}
+          >
+            {content}
+          </GlassSurface>
+        </Animated.View>
+      );
+    };
+
+    return (
       <Pressable
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        style={[styles.base, style]}
       >
-        <Icon size={size} color={iconColor} />
+        {renderInner()}
       </Pressable>
-    );
-
-    if (glassType === 'none') {
-      return <Animated.View style={animatedStyle}>{content}</Animated.View>;
-    }
-
-    return (
-      <Animated.View style={[animatedStyle, styles.glassWrapper]}>
-        <GlassSurface type={glassType} style={styles.glassSurface}>
-          {content}
-        </GlassSurface>
-      </Animated.View>
     );
   }
 );

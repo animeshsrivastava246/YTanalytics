@@ -1,5 +1,6 @@
 # dependencies
 node_modules/
+skills-lock.json
 
 # Expo
 .expo/
@@ -45,6 +46,7 @@ app-example
 
 # IDE/Editor folders
 .vscode/
+.agents/
 .idea/
 
 # JetBrains

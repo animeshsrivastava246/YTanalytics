@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -29,13 +29,20 @@ export function CombosUI() {
     </View>
   );
 
-  const renderItem = ({ item }: { item: CustomCombo }) => (
-    <Card onPress={() => router.push(`/combo/${item.id}`)} style={styles.card}>
-      <AppText variant="h2">{item.title}</AppText>
-      <AppText variant="body" color="muted">
-        {item.items.length} items
-      </AppText>
-    </Card>
+  const renderItem = useCallback(
+    ({ item, index }: { item: CustomCombo; index: number }) => (
+      <Card
+        onPress={() => router.push(`/combo/${item.id}`)}
+        style={styles.card}
+        index={index}
+      >
+        <AppText variant="h2">{item.title}</AppText>
+        <AppText variant="body" color="muted">
+          {item.items.length} items
+        </AppText>
+      </Card>
+    ),
+    [router]
   );
 
   return (

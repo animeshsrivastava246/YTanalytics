@@ -40,6 +40,10 @@ export default function RootLayout() {
               name="search/index"
               options={{ presentation: 'modal' }}
             />
+            <Stack.Screen
+              name="combo/builder"
+              options={{ presentation: 'modal' }}
+            />
           </Stack>
         </QueryClientProvider>
       </SafeAreaProvider>

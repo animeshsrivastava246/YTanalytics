@@ -1,11 +1,18 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import Animated, {
   useAnimatedStyle,
   withTiming,
   withSpring,
   useSharedValue,
 } from 'react-native-reanimated';
-import { Pressable, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import {
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+  View,
+  Pressable,
+} from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { AppText } from './AppText';
 import { GlassSurface } from './GlassSurface';
 import { tokens } from '@/constants/tokens';
@@ -18,10 +25,31 @@ interface ChipProps {
 }
 
 export const Chip = memo(({ label, selected, onPress, style }: ChipProps) => {
-  const scale = useSharedValue(1);
+  const pressed = useSharedValue(0);
+
+  const handlePressIn = useCallback(() => {
+    pressed.value = withSpring(1, {
+      mass: 1,
+      damping: 15,
+      stiffness: 300,
+    });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, [pressed]);
+
+  const handlePressOut = useCallback(() => {
+    pressed.value = withSpring(0, {
+      mass: 1,
+      damping: 15,
+      stiffness: 300,
+    });
+  }, [pressed]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [
+      {
+        scale: 1 - pressed.value * 0.08, // 1 to 0.92
+      },
+    ],
     backgroundColor: withTiming(
       selected
         ? tokens.theme.colors.accentSecondary
@@ -36,28 +64,22 @@ export const Chip = memo(({ label, selected, onPress, style }: ChipProps) => {
     ),
   }));
 
-  const handlePressIn = () => {
-    scale.value = withSpring(0.95);
-  };
-  const handlePressOut = () => {
-    scale.value = withSpring(1);
-  };
-
   return (
-    <Animated.View style={[styles.container, animatedStyle, style]}>
-      <GlassSurface type="tertiary" style={styles.glassSurface}>
-        <Pressable
-          onPress={onPress}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          style={styles.pressable}
-        >
-          <AppText variant="caption" color={selected ? 'primary' : 'muted'}>
-            {label}
-          </AppText>
-        </Pressable>
-      </GlassSurface>
-    </Animated.View>
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+    >
+      <Animated.View style={[styles.container, animatedStyle, style]}>
+        <GlassSurface type="tertiary" isInteractive style={styles.glassSurface}>
+          <View style={styles.content}>
+            <AppText variant="caption" color={selected ? 'primary' : 'muted'}>
+              {label}
+            </AppText>
+          </View>
+        </GlassSurface>
+      </Animated.View>
+    </Pressable>
   );
 });
 
@@ -71,7 +93,7 @@ const styles = StyleSheet.create({
   glassSurface: {
     borderRadius: tokens.theme.radii.pill,
   },
-  pressable: {
+  content: {
     paddingVertical: tokens.theme.spacing.sm,
     paddingHorizontal: tokens.theme.spacing.lg,
   },

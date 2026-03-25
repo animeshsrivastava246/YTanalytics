@@ -1,17 +1,18 @@
-import React, { ReactNode, memo } from 'react';
+import React, { ReactNode, memo, useCallback } from 'react';
 import Animated, {
   useAnimatedStyle,
   withSpring,
   useSharedValue,
-  FadeInUp,
+  FadeInDown,
 } from 'react-native-reanimated';
 import {
-  Pressable,
   StyleSheet,
   ViewStyle,
   View,
   StyleProp,
+  Pressable,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { GlassSurface } from './GlassSurface';
 import { tokens } from '@/constants/tokens';
 
@@ -25,21 +26,39 @@ interface CardProps {
 
 export const Card = memo(
   ({ onPress, children, style, contentStyle, index }: CardProps) => {
-    const scale = useSharedValue(1);
+    const pressed = useSharedValue(0);
+
+    const handlePressIn = useCallback(() => {
+      pressed.value = withSpring(1, {
+        mass: 1,
+        damping: 15,
+        stiffness: 300,
+      });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }, [pressed]);
+
+    const handlePressOut = useCallback(() => {
+      pressed.value = withSpring(0, {
+        mass: 1,
+        damping: 15,
+        stiffness: 300,
+      });
+    }, [pressed]);
 
     const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: scale.value }],
+      transform: [
+        {
+          scale: 1 - pressed.value * 0.02, // 1 to 0.98
+        },
+      ],
     }));
 
-    const handlePressIn = () => {
-      scale.value = withSpring(0.98, { damping: 20, stiffness: 300 });
-    };
-    const handlePressOut = () => {
-      scale.value = withSpring(1, { damping: 20, stiffness: 300 });
-    };
-
     const content = (
-      <GlassSurface type="secondary" style={[styles.surface, contentStyle]}>
+      <GlassSurface
+        type="secondary"
+        isInteractive={!!onPress}
+        style={[styles.surface, contentStyle]}
+      >
         {children}
       </GlassSurface>
     );
@@ -48,25 +67,24 @@ export const Card = memo(
       <Animated.View
         entering={
           index !== undefined
-            ? FadeInUp.delay(index * 100).springify()
+            ? FadeInDown.delay(index * 50).springify()
             : undefined
         }
         style={[styles.marginWrapper, style]}
       >
-        <Animated.View style={animatedStyle}>
-          {onPress ? (
-            <Pressable
-              onPress={onPress}
-              onPressIn={handlePressIn}
-              onPressOut={handlePressOut}
-              style={styles.pressableContainer}
-            >
-              {content}
-            </Pressable>
-          ) : (
-            <View style={styles.pressableContainer}>{content}</View>
-          )}
-        </Animated.View>
+        {onPress ? (
+          <Pressable
+            onPress={onPress}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+          >
+            <Animated.View style={animatedStyle}>
+              <View style={styles.pressableContainer}>{content}</View>
+            </Animated.View>
+          </Pressable>
+        ) : (
+          <View style={styles.pressableContainer}>{content}</View>
+        )}
       </Animated.View>
     );
   }

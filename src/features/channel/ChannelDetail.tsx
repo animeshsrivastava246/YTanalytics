@@ -109,9 +109,9 @@ export function ChannelDetail({ id }: { id: string }) {
               {isUploadsLoading || isUploadVideosLoading ? (
                 <ActivityIndicator color={tokens.theme.colors.accentPrimary} />
               ) : uploadVideos && uploadVideos.length > 0 ? (
-                uploadVideos.map((video) => (
+                uploadVideos.map((video, index) => (
                   <View key={video.id} style={styles.videoRowWrapper}>
-                    <ResultRow item={video} type="video" />
+                    <ResultRow item={video} type="video" index={index} />
                   </View>
                 ))
               ) : (

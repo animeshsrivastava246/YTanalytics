@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Clock, ListVideo, ChevronRight } from 'lucide-react-native';
 import { AppText } from '@/components/AppText';
@@ -11,43 +11,53 @@ interface SavedComboCardProps {
   onPress: () => void;
 }
 
-export function SavedComboCard({ combo, index, onPress }: SavedComboCardProps) {
-  return (
-    <Card
-      key={combo.id}
-      index={index}
-      onPress={onPress}
-      style={styles.cardWrapper}
-    >
-      <View style={styles.cardContent}>
-        <View style={styles.cardInfo}>
-          <AppText variant="h3" style={styles.cardTitle}>
-            {combo.title}
-          </AppText>
+export const SavedComboCard = memo(
+  ({ combo, index, onPress }: SavedComboCardProps) => {
+    return (
+      <Card
+        key={combo.id}
+        index={index}
+        onPress={onPress}
+        style={styles.cardWrapper}
+      >
+        <View style={styles.cardContent}>
+          <View style={styles.cardInfo}>
+            <AppText variant="h3" style={styles.cardTitle}>
+              {combo.title}
+            </AppText>
 
-          <View style={styles.cardMetaRow}>
-            <View style={styles.metaItem}>
-              <ListVideo color={tokens.theme.colors.textMuted} size={14} />
-              <AppText variant="caption" color="muted" style={styles.metaText}>
-                {combo.itemsCount} items
-              </AppText>
-            </View>
-            <View style={styles.metaItem}>
-              <Clock color={tokens.theme.colors.textMuted} size={14} />
-              <AppText variant="caption" color="muted" style={styles.metaText}>
-                {combo.duration}
-              </AppText>
+            <View style={styles.cardMetaRow}>
+              <View style={styles.metaItem}>
+                <ListVideo color={tokens.theme.colors.textMuted} size={14} />
+                <AppText
+                  variant="caption"
+                  color="muted"
+                  style={styles.metaText}
+                >
+                  {combo.itemsCount} items
+                </AppText>
+              </View>
+              <View style={styles.metaItem}>
+                <Clock color={tokens.theme.colors.textMuted} size={14} />
+                <AppText
+                  variant="caption"
+                  color="muted"
+                  style={styles.metaText}
+                >
+                  {combo.duration}
+                </AppText>
+              </View>
             </View>
           </View>
-        </View>
 
-        <View style={styles.cardAction}>
-          <ChevronRight color={tokens.theme.colors.textMuted} size={20} />
+          <View style={styles.cardAction}>
+            <ChevronRight color={tokens.theme.colors.textMuted} size={20} />
+          </View>
         </View>
-      </View>
-    </Card>
-  );
-}
+      </Card>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   cardWrapper: {

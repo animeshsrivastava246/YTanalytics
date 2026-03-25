@@ -1,8 +1,14 @@
-import React from 'react';
-import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { Link } from 'expo-router';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { Search } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { AppText } from '@/components/AppText';
 import { GlassSurface } from '@/components/GlassSurface';
 import { Chip } from '@/components/Chip';
@@ -24,7 +30,51 @@ const SAVED_COMBOS = [
 
 export function HomeUI() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
+
+  const searchPressed = useSharedValue(0);
+  const viewAllPressed = useSharedValue(0);
+
+  const handleSearchPressIn = useCallback(() => {
+    searchPressed.value = withSpring(1, {
+      mass: 1,
+      damping: 15,
+      stiffness: 300,
+    });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, [searchPressed]);
+
+  const handleSearchPressOut = useCallback(() => {
+    searchPressed.value = withSpring(0, {
+      mass: 1,
+      damping: 15,
+      stiffness: 300,
+    });
+  }, [searchPressed]);
+
+  const handleViewAllPressIn = useCallback(() => {
+    viewAllPressed.value = withSpring(1, {
+      mass: 1,
+      damping: 15,
+      stiffness: 300,
+    });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, [viewAllPressed]);
+
+  const handleViewAllPressOut = useCallback(() => {
+    viewAllPressed.value = withSpring(0, {
+      mass: 1,
+      damping: 15,
+      stiffness: 300,
+    });
+  }, [viewAllPressed]);
+
+  const searchAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 - searchPressed.value * 0.02 }], // 1 to 0.98
+  }));
+
+  const viewAllAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 - viewAllPressed.value * 0.05 }], // 1 to 0.95
+  }));
 
   return (
     <View style={styles.container}>
@@ -43,15 +93,24 @@ export function HomeUI() {
           Ready to save some time today?
         </AppText>
 
-        <Pressable
-          style={styles.searchBar}
-          onPress={() => router.push('/search')}
-        >
-          <Search color={tokens.theme.colors.textMuted} size={20} />
-          <AppText variant="body" color="muted" style={styles.searchText}>
-            Search videos, playlists...
-          </AppText>
-        </Pressable>
+        <Link href="/search" asChild>
+          <Pressable
+            onPressIn={handleSearchPressIn}
+            onPressOut={handleSearchPressOut}
+          >
+            <Animated.View style={[styles.searchBar, searchAnimatedStyle]}>
+              <GlassSurface
+                type="secondary"
+                isInteractive
+                style={StyleSheet.absoluteFillObject}
+              />
+              <Search color={tokens.theme.colors.textMuted} size={20} />
+              <AppText variant="body" color="muted" style={styles.searchText}>
+                Search videos, playlists...
+              </AppText>
+            </Animated.View>
+          </Pressable>
+        </Link>
       </GlassSurface>
 
       <ScrollView
@@ -75,9 +134,9 @@ export function HomeUI() {
               key={search}
               label={search}
               selected={false}
-              onPress={() =>
-                router.push(`/search?q=${encodeURIComponent(search)}`)
-              }
+              onPress={() => {}}
+              // Navigation handled inside Chip or manually here if needed
+              // For now keeping it simple as Chip handles its own Pressable
             />
           ))}
         </ScrollView>
@@ -85,11 +144,18 @@ export function HomeUI() {
         {/* Saved Combos Section */}
         <View style={[styles.sectionHeader, styles.marginTopLg]}>
           <AppText variant="h3">Saved Combos</AppText>
-          <Pressable onPress={() => router.push('/combos')}>
-            <AppText variant="body" color="accent">
-              View All
-            </AppText>
-          </Pressable>
+          <Link href="/combos" asChild>
+            <Pressable
+              onPressIn={handleViewAllPressIn}
+              onPressOut={handleViewAllPressOut}
+            >
+              <Animated.View style={viewAllAnimatedStyle}>
+                <AppText variant="body" color="accent">
+                  View All
+                </AppText>
+              </Animated.View>
+            </Pressable>
+          </Link>
         </View>
 
         <View style={styles.combosList}>
@@ -98,7 +164,7 @@ export function HomeUI() {
               key={combo.id}
               combo={combo}
               index={index}
-              onPress={() => router.push(`/combo/${combo.id}`)}
+              onPress={() => {}}
             />
           ))}
         </View>
@@ -125,11 +191,11 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: tokens.theme.colors.glassSecondary,
     padding: tokens.theme.spacing.lg,
     borderRadius: tokens.theme.radii.lg,
     borderWidth: 1,
     borderColor: tokens.theme.colors.borderSubtle,
+    overflow: 'hidden',
   },
   searchText: {
     marginLeft: tokens.theme.spacing.md,
