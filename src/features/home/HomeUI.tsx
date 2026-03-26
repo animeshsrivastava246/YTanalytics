@@ -14,14 +14,10 @@ import { GlassSurface } from '@/components/GlassSurface';
 import { Chip } from '@/components/Chip';
 import { tokens } from '@/constants/tokens';
 import { SavedComboCard } from './components/SavedComboCard';
+import { useSettingsStore } from '@/services/settingsStore';
+import { EmptyState } from '@/components/EmptyState';
 
 // Mock Data
-const RECENT_SEARCHES = [
-  'React Native Animations',
-  'Expo 2024 Features',
-  'UI/UX Masterclass',
-  'JavaScript Basics',
-];
 const SAVED_COMBOS = [
   { id: '1', title: 'Learn React Native', itemsCount: 12, duration: '4:20:15' },
   { id: '2', title: 'Design Inspiration', itemsCount: 5, duration: '1:15:00' },
@@ -30,6 +26,7 @@ const SAVED_COMBOS = [
 
 export function HomeUI() {
   const insets = useSafeAreaInsets();
+  const { searchHistory } = useSettingsStore();
 
   const searchPressed = useSharedValue(0);
   const viewAllPressed = useSharedValue(0);
@@ -123,23 +120,31 @@ export function HomeUI() {
         <View style={styles.sectionHeader}>
           <AppText variant="h3">Recent Searches</AppText>
         </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.horizontalScroll}
-          contentContainerStyle={styles.horizontalScrollContent}
-        >
-          {RECENT_SEARCHES.map((search) => (
-            <Chip
-              key={search}
-              label={search}
-              selected={false}
-              onPress={() => {}}
-              // Navigation handled inside Chip or manually here if needed
-              // For now keeping it simple as Chip handles its own Pressable
-            />
-          ))}
-        </ScrollView>
+
+        {searchHistory.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.horizontalScroll}
+            contentContainerStyle={styles.horizontalScrollContent}
+          >
+            {searchHistory.map((search) => (
+              <Chip
+                key={search}
+                label={search}
+                selected={false}
+                onPress={() => {}}
+              />
+            ))}
+          </ScrollView>
+        ) : (
+          <EmptyState
+            type="static"
+            title="Popular Searches"
+            description="Try: React Native, Expo Router, Svelte..."
+            isStatic
+          />
+        )}
 
         {/* Saved Combos Section */}
         <View style={[styles.sectionHeader, styles.marginTopLg]}>

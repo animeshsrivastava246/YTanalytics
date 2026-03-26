@@ -1,26 +1,26 @@
 import { tokens } from '@/constants/tokens';
-import {
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Alert, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const queryClient = new QueryClient({
-  queryCache: new QueryCache({
-    onError: (error: Error) => {
-      if (error?.name === 'QuotaExceededError') {
-        Alert.alert(
-          'API Limit Reached',
-          'Oops! YouTube API daily limit reached. Please try again later.'
-        );
-      }
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 30 * 60 * 1000, // 30 minutes (transient cache)
+      retry: (failureCount, error: any) => {
+        if (
+          error?.name === 'QuotaExceededError' ||
+          error?.code === 'quotaExceeded'
+        )
+          return false;
+        return failureCount < 2;
+      },
     },
-  }),
+  },
 });
 
 export default function RootLayout() {

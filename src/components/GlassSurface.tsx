@@ -4,6 +4,8 @@ import { View, StyleSheet, ViewStyle, StyleProp, Platform } from 'react-native';
 import { tokens } from '@/constants/tokens';
 import React, { ReactNode, memo } from 'react';
 
+import { useSettingsStore } from '@/services/settingsStore';
+
 type GlassType = 'primary' | 'secondary' | 'tertiary';
 
 interface GlassSurfaceProps {
@@ -18,18 +20,25 @@ interface GlassSurfaceProps {
 export const GlassSurface = memo(
   ({
     type = 'secondary',
+    isInteractive = false,
     intensity,
     tint,
     style,
     children,
-    isInteractive = false,
     ...rest
   }: GlassSurfaceProps) => {
-    const isLiquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
+    const { reduceTransparency } = useSettingsStore();
+    const isLiquidGlass =
+      Platform.OS === 'ios' && isLiquidGlassAvailable() && !reduceTransparency;
+
     const effect =
       tokens.theme.glassEffect[type] || tokens.theme.glassEffect.secondary;
     const glassStyle =
       tokens.theme.glassStyle[type] || tokens.theme.glassStyle.secondary;
+
+    const finalIntensity = reduceTransparency
+      ? (intensity ?? effect.intensity) * 0.3
+      : (intensity ?? effect.intensity);
 
     if (isLiquidGlass) {
       return (
@@ -46,23 +55,31 @@ export const GlassSurface = memo(
     }
 
     return (
-      <BlurView
-        intensity={intensity ?? effect.intensity}
-        tint={tint ?? effect.tint}
-        style={[styles.container, style]}
+      <View
+        style={[styles.container, style, reduceTransparency && styles.reduced]}
         {...rest}
       >
+        {!reduceTransparency && (
+          <BlurView
+            intensity={finalIntensity}
+            tint={tint ?? effect.tint}
+            style={StyleSheet.absoluteFillObject}
+          />
+        )}
         <View
           style={[
             StyleSheet.absoluteFillObject,
             {
-              backgroundColor:
-                type === 'primary' ? 'rgba(0,0,0,0.2)' : 'transparent',
+              backgroundColor: reduceTransparency
+                ? tokens.theme.colors.glassSecondary
+                : type === 'primary'
+                  ? 'rgba(0,0,0,0.2)'
+                  : 'transparent',
             },
           ]}
         />
         {children}
-      </BlurView>
+      </View>
     );
   }
 );
@@ -70,5 +87,10 @@ export const GlassSurface = memo(
 const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
+  },
+  reduced: {
+    backgroundColor: tokens.theme.colors.glassSecondary,
+    borderWidth: 1,
+    borderColor: tokens.theme.colors.borderSubtle,
   },
 });

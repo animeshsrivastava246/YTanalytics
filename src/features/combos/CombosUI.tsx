@@ -9,6 +9,7 @@ import { IconButton } from '@/components/IconButton';
 import { GlassSurface } from '@/components/GlassSurface';
 import { useComboStore, CustomCombo } from '@/features/combos/useComboStore';
 import { tokens } from '@/constants/tokens';
+import { EmptyState } from '@/components/EmptyState';
 
 export function CombosUI() {
   const { combos } = useComboStore();
@@ -19,15 +20,7 @@ export function CombosUI() {
     router.push('/combo/builder');
   };
 
-  const renderEmpty = () => (
-    <View style={styles.center}>
-      <AppText variant="h3" color="muted" style={{ textAlign: 'center' }}>
-        {
-          "You haven't saved any Combos yet.\nTap the '+' button to build your first playlist."
-        }
-      </AppText>
-    </View>
-  );
+  const renderEmpty = () => <EmptyState type="combos" />;
 
   const renderItem = useCallback(
     ({ item, index }: { item: CustomCombo; index: number }) => (
