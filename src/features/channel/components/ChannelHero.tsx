@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { BlurView } from 'expo-blur';
 import { IconButton } from '@/components/IconButton';
 import { ArrowLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { tokens } from '@/constants/tokens';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 interface ChannelHeroProps {
   thumbnailUrl: string;
@@ -13,18 +14,23 @@ interface ChannelHeroProps {
 
 export function ChannelHero({ thumbnailUrl, topInset }: ChannelHeroProps) {
   const router = useRouter();
+  const { colors, spacing } = useAppTheme();
 
   return (
-    <View style={styles.heroContainer}>
+    <View style={styles.container}>
       <Image
         source={{ uri: thumbnailUrl }}
-        style={styles.heroImageBlur}
-        blurRadius={60}
+        style={styles.backgroundImage}
         contentFit="cover"
       />
-      <View style={styles.heroImageOverlay} />
+      <BlurView intensity={80} style={StyleSheet.absoluteFill} tint="dark" />
 
-      <View style={[styles.headerOverlay, { top: topInset }]}>
+      <View
+        style={[
+          styles.headerOverlay,
+          { top: topInset + spacing.sm, left: spacing.lg },
+        ]}
+      >
         <IconButton
           icon={ArrowLeft}
           onPress={() => router.back()}
@@ -32,47 +38,64 @@ export function ChannelHero({ thumbnailUrl, topInset }: ChannelHeroProps) {
         />
       </View>
 
-      <Image
-        source={{ uri: thumbnailUrl }}
-        style={styles.avatar}
-        contentFit="cover"
-      />
+      <View
+        style={[
+          styles.avatarContainer,
+          {
+            paddingBottom: spacing.xl,
+          },
+        ]}
+      >
+        <Image
+          source={{ uri: thumbnailUrl }}
+          style={[
+            styles.avatar,
+            {
+              borderRadius: 60,
+              backgroundColor: colors.surfaceBg,
+              borderColor: colors.surfaceBg,
+            },
+          ]}
+          contentFit="cover"
+        />
+        <View
+          style={[styles.avatarScrim, { backgroundColor: colors.scrimDark }]}
+        />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  heroContainer: {
+  container: {
     width: '100%',
-    height: 220,
-    position: 'relative',
-    justifyContent: 'flex-end',
+    height: 240,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: tokens.theme.spacing.xl,
+    position: 'relative',
+    overflow: 'hidden',
   },
-  heroImageBlur: {
-    position: 'absolute',
+  backgroundImage: {
+    ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
-    opacity: 0.6,
-  },
-  heroImageOverlay: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: tokens.theme.colors.scrimDark,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    zIndex: 5,
-    borderWidth: 3,
-    borderColor: tokens.theme.colors.surfaceBg,
   },
   headerOverlay: {
     position: 'absolute',
-    left: tokens.theme.spacing.lg,
     zIndex: 10,
+  },
+  avatarContainer: {
+    marginTop: 40,
+    position: 'relative',
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderWidth: 4,
+  },
+  avatarScrim: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 60,
+    opacity: 0.1,
   },
 });

@@ -20,15 +20,17 @@ import { StatPill } from '@/components/StatPill';
 import { useVideo } from '@/hooks/useYouTube';
 import { useWatchTime } from '@/hooks/useWatchTime';
 import { useSettingsStore } from '@/services/settingsStore';
-import { tokens } from '@/constants/tokens';
 import { formatStat } from '@/utils/format';
 import { DetailSkeleton } from '@/components/DetailSkeleton';
 import { ErrorState } from '@/components/ErrorState';
+import { SpeedInput } from '@/components/SpeedInput';
+import { useAppTheme } from '@/context/ThemeProvider';
 import * as Haptics from 'expo-haptics';
 
 export function VideoDetail({ id }: { id: string }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, spacing, radii } = useAppTheme();
   const { playbackSpeed: defaultSpeed } = useSettingsStore();
 
   const [speed, setSpeed] = useState<number>(defaultSpeed);
@@ -59,7 +61,13 @@ export function VideoDetail({ id }: { id: string }) {
         ? 'quota'
         : 'api';
     return (
-      <View style={[styles.container, styles.center]}>
+      <View
+        style={[
+          styles.container,
+          styles.center,
+          { backgroundColor: colors.surfaceBg },
+        ]}
+      >
         <ErrorState type={errorType} onRetry={() => refetch()} />
         <IconButton
           icon={ArrowLeft}
@@ -73,7 +81,7 @@ export function VideoDetail({ id }: { id: string }) {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.surfaceBg }]}
       contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
       showsVerticalScrollIndicator={false}
       contentInsetAdjustmentBehavior="automatic"
@@ -87,7 +95,7 @@ export function VideoDetail({ id }: { id: string }) {
         <View
           style={[
             styles.headerOverlay,
-            { top: insets.top + tokens.theme.spacing.sm },
+            { top: insets.top + spacing.sm, left: spacing.lg },
           ]}
         >
           <IconButton
@@ -98,15 +106,27 @@ export function VideoDetail({ id }: { id: string }) {
         </View>
       </View>
 
-      <View style={styles.content}>
-        <AppText variant="h2" style={styles.title}>
+      <View style={[styles.content, { padding: spacing.lg }]}>
+        <AppText
+          variant="h2"
+          style={[styles.title, { marginBottom: spacing.xs }]}
+        >
           {video.title}
         </AppText>
-        <AppText variant="subtitle" color="muted" style={styles.channel}>
+        <AppText
+          variant="subtitle"
+          color="muted"
+          style={[styles.channel, { marginBottom: spacing.xl }]}
+        >
           {video.channelTitle}
         </AppText>
 
-        <View style={styles.statsRow}>
+        <View
+          style={[
+            styles.statsRow,
+            { gap: spacing.sm, marginBottom: spacing.xxl },
+          ]}
+        >
           <StatPill icon={Eye} value={formatStat(video.viewCount)} />
           <StatPill icon={ThumbsUp} value={formatStat(video.likeCount)} />
           <StatPill
@@ -115,37 +135,74 @@ export function VideoDetail({ id }: { id: string }) {
           />
         </View>
 
-        <GlassSurface type="secondary" style={styles.timeCard}>
-          <View style={styles.timeHeader}>
-            <Clock size={20} color={tokens.theme.colors.textPrimary} />
+        <GlassSurface
+          type="secondary"
+          style={[
+            styles.timeCard,
+            {
+              padding: spacing.xl,
+              borderRadius: radii.lg,
+              marginBottom: spacing.lg,
+              borderWidth: 1,
+              borderColor: colors.borderSubtle,
+            },
+          ]}
+        >
+          <View style={[styles.timeHeader, { marginBottom: spacing.xl }]}>
+            <Clock size={20} color={colors.textPrimary} />
             <AppText variant="subtitle" style={styles.timeHeaderLabel}>
               Base Duration: {watchTime.totalFormatted}
             </AppText>
           </View>
 
-          <AppText variant="caption" color="muted" style={styles.speedLabel}>
+          <AppText
+            variant="caption"
+            color="muted"
+            style={[
+              styles.speedLabel,
+              { marginBottom: spacing.sm, marginLeft: spacing.xs },
+            ]}
+          >
             Playback Speed
           </AppText>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.speedRow}
-            contentContainerStyle={styles.speedRowContent}
-          >
-            {[1, 1.25, 1.5, 1.75, 2, 2.5, 3].map((s) => (
-              <Chip
-                key={s}
-                label={`${s}x`}
-                selected={speed === s}
-                onPress={() => {
-                  setSpeed(s);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-              />
-            ))}
-          </ScrollView>
+          <View style={styles.speedInputRow}>
+            <SpeedInput
+              value={speed}
+              onChange={(s) => {
+                setSpeed(s);
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={[styles.presetScroll, { marginLeft: spacing.md }]}
+              contentContainerStyle={styles.speedRowContent}
+            >
+              {[1, 1.25, 1.5, 1.75, 2, 2.5, 3, 5].map((s) => (
+                <Chip
+                  key={s}
+                  label={`${s}x`}
+                  selected={speed === s}
+                  onPress={() => {
+                    setSpeed(s);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                />
+              ))}
+            </ScrollView>
+          </View>
 
-          <View style={styles.timeResult}>
+          <View
+            style={[
+              styles.timeResult,
+              {
+                paddingVertical: spacing.md,
+                borderTopWidth: 1,
+                borderTopColor: colors.borderSubtle,
+              },
+            ]}
+          >
             <AppText variant="h1">{watchTime.timeAtSpeedFormatted}</AppText>
             {watchTime.timeSavedSeconds > 0 && (
               <AppText variant="h4" color="accent" style={styles.savedResult}>
@@ -158,11 +215,19 @@ export function VideoDetail({ id }: { id: string }) {
         <Pressable
           style={({ pressed }) => [
             styles.youtubeButton,
+            {
+              backgroundColor: colors.glassSecondary,
+              padding: spacing.md,
+              borderRadius: radii.md,
+              marginBottom: spacing.xxl,
+              borderWidth: 1,
+              borderColor: colors.accentPrimary + '40',
+            },
             pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
           ]}
           onPress={handleWatchOnYouTube}
         >
-          <Youtube color={tokens.theme.colors.accentPrimary} size={20} />
+          <Youtube color={colors.accentPrimary} size={20} />
           <AppText
             variant="subtitle"
             color="accent"
@@ -170,10 +235,14 @@ export function VideoDetail({ id }: { id: string }) {
           >
             Watch on YouTube
           </AppText>
-          <ExternalLink color={tokens.theme.colors.accentPrimary} size={16} />
+          <ExternalLink color={colors.accentPrimary} size={16} />
         </Pressable>
 
-        <AppText variant="body" color="muted" style={styles.description}>
+        <AppText
+          variant="body"
+          color="muted"
+          style={[styles.description, { marginTop: spacing.sm }]}
+        >
           {video.description}
         </AppText>
       </View>
@@ -182,64 +251,48 @@ export function VideoDetail({ id }: { id: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: tokens.theme.colors.surfaceBg },
+  container: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   heroContainer: { width: '100%', height: 260, position: 'relative' },
   heroImage: { width: '100%', height: '100%' },
   headerOverlay: {
     position: 'absolute',
-    left: tokens.theme.spacing.lg,
     zIndex: 10,
   },
-  backButton: { marginTop: tokens.theme.spacing.xl },
-  content: { padding: tokens.theme.spacing.lg },
-  title: { marginBottom: tokens.theme.spacing.xs },
-  channel: { marginBottom: tokens.theme.spacing.xl },
+  backButton: { marginTop: 24 },
+  content: {},
+  title: {},
+  channel: {},
   statsRow: {
     flexDirection: 'row',
-    gap: tokens.theme.spacing.sm,
-    marginBottom: tokens.theme.spacing.xxl,
     flexWrap: 'wrap',
   },
-  timeCard: {
-    padding: tokens.theme.spacing.xl,
-    borderRadius: tokens.theme.radii.lg,
-    marginBottom: tokens.theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: tokens.theme.colors.borderSubtle,
-  },
+  timeCard: {},
   timeHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: tokens.theme.spacing.xl,
   },
-  timeHeaderLabel: { marginLeft: tokens.theme.spacing.sm },
-  speedLabel: {
-    marginBottom: tokens.theme.spacing.sm,
-    marginLeft: tokens.theme.spacing.xs,
+  timeHeaderLabel: { marginLeft: 8 },
+  speedLabel: {},
+  speedInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  speedRow: { marginBottom: tokens.theme.spacing.xl },
-  speedRowContent: { gap: tokens.theme.spacing.sm },
+  presetScroll: {
+    flex: 1,
+  },
+  speedRowContent: { gap: 8 },
   timeResult: {
     alignItems: 'center',
-    paddingVertical: tokens.theme.spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: tokens.theme.colors.borderSubtle,
   },
-  savedResult: { marginTop: tokens.theme.spacing.xs },
+  savedResult: { marginTop: 4 },
   youtubeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: tokens.theme.colors.glassSecondary,
-    padding: tokens.theme.spacing.md,
-    borderRadius: tokens.theme.radii.md,
-    marginBottom: tokens.theme.spacing.xxl,
-    borderWidth: 1,
-    borderColor: tokens.theme.colors.accentPrimary + '40',
   },
   youtubeButtonText: {
-    marginHorizontal: tokens.theme.spacing.sm,
+    marginHorizontal: 8,
   },
-  description: { marginTop: tokens.theme.spacing.sm, lineHeight: 24 },
+  description: { lineHeight: 24 },
 });

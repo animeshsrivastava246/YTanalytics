@@ -1,10 +1,10 @@
 import { BlurView, BlurTint } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { View, StyleSheet, ViewStyle, StyleProp, Platform } from 'react-native';
-import { tokens } from '@/constants/tokens';
 import React, { ReactNode, memo } from 'react';
 
 import { useSettingsStore } from '@/services/settingsStore';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 type GlassType = 'primary' | 'secondary' | 'tertiary';
 
@@ -28,13 +28,16 @@ export const GlassSurface = memo(
     ...rest
   }: GlassSurfaceProps) => {
     const { reduceTransparency } = useSettingsStore();
+    const { colors, glassEffect, glassStyle: themeGlassStyle } = useAppTheme();
+
     const isLiquidGlass =
       Platform.OS === 'ios' && isLiquidGlassAvailable() && !reduceTransparency;
 
     const effect =
-      tokens.theme.glassEffect[type] || tokens.theme.glassEffect.secondary;
+      glassEffect[type as keyof typeof glassEffect] || glassEffect.secondary;
     const glassStyle =
-      tokens.theme.glassStyle[type] || tokens.theme.glassStyle.secondary;
+      themeGlassStyle[type as keyof typeof themeGlassStyle] ||
+      themeGlassStyle.secondary;
 
     const finalIntensity = reduceTransparency
       ? (intensity ?? effect.intensity) * 0.3
@@ -56,7 +59,15 @@ export const GlassSurface = memo(
 
     return (
       <View
-        style={[styles.container, style, reduceTransparency && styles.reduced]}
+        style={[
+          styles.container,
+          style,
+          reduceTransparency && {
+            backgroundColor: colors.glassSecondary,
+            borderWidth: 1,
+            borderColor: colors.borderSubtle,
+          },
+        ]}
         {...rest}
       >
         {!reduceTransparency && (
@@ -71,8 +82,8 @@ export const GlassSurface = memo(
             StyleSheet.absoluteFillObject,
             {
               backgroundColor: reduceTransparency
-                ? tokens.theme.colors.glassSecondary
-                : type === 'primary'
+                ? colors.glassSecondary
+                : type === 'primary' && colors.surfaceBg === '#000000'
                   ? 'rgba(0,0,0,0.2)'
                   : 'transparent',
             },
@@ -87,10 +98,5 @@ export const GlassSurface = memo(
 const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
-  },
-  reduced: {
-    backgroundColor: tokens.theme.colors.glassSecondary,
-    borderWidth: 1,
-    borderColor: tokens.theme.colors.borderSubtle,
   },
 });

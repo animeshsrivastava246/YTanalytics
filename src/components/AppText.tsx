@@ -1,6 +1,7 @@
 import React, { ReactNode, memo } from 'react';
 import { Text, TextStyle, StyleProp } from 'react-native';
-import { tokens } from '@/constants/tokens';
+
+import { useAppTheme } from '@/context/ThemeProvider';
 
 type TextVariant = 'h1' | 'h2' | 'h3' | 'h4' | 'subtitle' | 'body' | 'caption';
 type TextColor = 'primary' | 'muted' | 'accent' | 'error';
@@ -21,18 +22,19 @@ export const AppText = memo<AppTextProps>(
     style,
     children,
   }: AppTextProps) => {
-    const typography =
-      tokens.theme.typography[variant] || tokens.theme.typography.body;
+    const { colors, typography: themeTypography } = useAppTheme();
+    const typography = themeTypography[variant] || themeTypography.body;
+
     const getColor = (): string => {
       switch (color) {
         case 'muted':
-          return tokens.theme.colors.textMuted;
+          return colors.textMuted;
         case 'accent':
-          return tokens.theme.colors.accentPrimary;
+          return colors.accentPrimary;
         case 'error':
-          return tokens.theme.colors.error;
+          return colors.error;
         default:
-          return tokens.theme.colors.textPrimary;
+          return colors.textPrimary;
       }
     };
     const colorValue = getColor();

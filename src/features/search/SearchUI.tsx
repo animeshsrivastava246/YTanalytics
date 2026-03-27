@@ -6,19 +6,24 @@ import { GlassSurface } from '@/components/GlassSurface';
 import { Chip } from '@/components/Chip';
 import { useSearch } from '@/hooks/useYouTube';
 import { useDebounce } from '@/hooks/useDebounce';
-import { tokens } from '@/constants/tokens';
 import { ResultRow } from './components/ResultRow';
 import { CardSkeleton } from '@/components/CardSkeleton';
 import { ErrorState, ErrorType } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
 import { RawYouTubeSearchItem } from '@/services/youtube.types';
 import { useSettingsStore } from '@/services/settingsStore';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 type SearchType = 'video' | 'playlist' | 'channel';
 
-export function SearchUI() {
+interface SearchUIProps {
+  initialQuery?: string;
+}
+
+export function SearchUI({ initialQuery }: SearchUIProps) {
   const insets = useSafeAreaInsets();
-  const [query, setQuery] = useState('');
+  const { colors, spacing, radii, typography } = useAppTheme();
+  const [query, setQuery] = useState(initialQuery ?? '');
   const debouncedQuery = useDebounce(query, 500);
   const [type, setType] = useState<SearchType>('video');
   const { addSearchHistory } = useSettingsStore();
@@ -48,7 +53,7 @@ export function SearchUI() {
       name?: string;
       code?: string;
       message?: string;
-      response?: any;
+      response?: { status?: number };
     };
     if (err.name === 'QuotaExceededError' || err.code === 'quotaExceeded')
       return 'quota';
@@ -58,21 +63,38 @@ export function SearchUI() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceBg }]}>
       <GlassSurface
         type="secondary"
-        style={[styles.header, { paddingTop: insets.top }]}
+        style={[
+          styles.header,
+          {
+            paddingTop: insets.top,
+            paddingHorizontal: spacing.lg,
+            paddingBottom: spacing.md,
+          },
+        ]}
       >
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: colors.glassSecondary,
+              color: colors.textPrimary,
+              fontSize: typography.body.fontSize,
+              padding: spacing.md,
+              borderRadius: radii.md,
+              marginBottom: spacing.md,
+            },
+          ]}
           placeholder="Search YouTube..."
-          placeholderTextColor={tokens.theme.colors.textMuted}
+          placeholderTextColor={colors.textMuted}
           value={query}
           onChangeText={setQuery}
           autoFocus
           clearButtonMode="while-editing"
         />
-        <View style={styles.filters}>
+        <View style={[styles.filters, { gap: spacing.sm }]}>
           <Chip
             label="Videos"
             selected={type === 'video'}
@@ -96,7 +118,7 @@ export function SearchUI() {
           <Animated.View
             entering={FadeIn.duration(200)}
             exiting={FadeOut.duration(200)}
-            style={styles.listContent}
+            style={[styles.listContent, { padding: spacing.lg }]}
           >
             {[1, 2, 3, 4, 5].map((i) => (
               <CardSkeleton key={i} type={type} />
@@ -105,13 +127,19 @@ export function SearchUI() {
         )}
 
         {isError && (
-          <Animated.View entering={FadeIn.duration(200)} style={styles.center}>
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            style={[styles.center, { marginTop: spacing.xxxl }]}
+          >
             <ErrorState type={getErrorType()} onRetry={() => refetch()} />
           </Animated.View>
         )}
 
         {!isLoading && !isError && !debouncedQuery && (
-          <Animated.View entering={FadeIn.duration(200)} style={styles.center}>
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            style={[styles.center, { marginTop: spacing.xxxl }]}
+          >
             <EmptyState type="search" />
           </Animated.View>
         )}
@@ -122,7 +150,7 @@ export function SearchUI() {
           (!data?.items || data.items.length === 0) && (
             <Animated.View
               entering={FadeIn.duration(200)}
-              style={styles.center}
+              style={[styles.center, { marginTop: spacing.xxxl }]}
             >
               <EmptyState type="no-results" query={debouncedQuery} />
             </Animated.View>
@@ -141,7 +169,10 @@ export function SearchUI() {
               renderItem={renderItem}
               contentContainerStyle={[
                 styles.listContent,
-                { paddingBottom: insets.bottom + 80 },
+                {
+                  padding: spacing.lg,
+                  paddingBottom: insets.bottom + 80,
+                },
               ]}
               showsVerticalScrollIndicator={false}
               contentInsetAdjustmentBehavior="automatic"
@@ -154,23 +185,14 @@ export function SearchUI() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: tokens.theme.colors.surfaceBg },
+  container: { flex: 1 },
   header: {
-    paddingBottom: tokens.theme.spacing.md,
-    paddingHorizontal: tokens.theme.spacing.lg,
     zIndex: 10,
   },
-  input: {
-    backgroundColor: tokens.theme.colors.glassSecondary,
-    color: tokens.theme.colors.textPrimary,
-    fontSize: tokens.theme.typography.body.fontSize,
-    padding: tokens.theme.spacing.md,
-    borderRadius: tokens.theme.radii.md,
-    marginBottom: tokens.theme.spacing.md,
-  },
-  filters: { flexDirection: 'row', gap: tokens.theme.spacing.sm },
+  input: {},
+  filters: { flexDirection: 'row' },
   listContainer: { flex: 1 },
-  listContent: { padding: tokens.theme.spacing.lg },
+  listContent: {},
   flex: { flex: 1 },
-  center: { flex: 1, marginTop: tokens.theme.spacing.xxxl },
+  center: { flex: 1 },
 });

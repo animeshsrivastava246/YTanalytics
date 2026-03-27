@@ -11,20 +11,20 @@ import { useComboStore } from '@/features/combos/useComboStore';
 import { ComboItemRow } from '@/features/combos/components/ComboItemRow';
 import { useVideos } from '@/hooks/useYouTube';
 import { useWatchTime } from '@/hooks/useWatchTime';
-import { tokens } from '@/constants/tokens';
+import { SpeedInput } from '@/components/SpeedInput';
+import { useAppTheme } from '@/context/ThemeProvider';
+import * as Haptics from 'expo-haptics';
 
 export default function ComboDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, spacing, radii } = useAppTheme();
   const { combos, deleteCombo, updateCombo } = useComboStore();
 
   const [speed, setSpeed] = useState<number>(1);
   const combo = combos.find((c) => c.id === id);
 
-  // Deeply flatten items
-  // NOTE: For MVP, we handle only 'video' types correctly in this snippet loop without overcomplicating fetching.
-  // Full implementation would require a custom parallel query hook to expand playlists and channels into video IDs.
   const videoIds = useMemo(() => {
     return (
       combo?.items.filter((i) => i.type === 'video').map((i) => i.id) || []
@@ -36,7 +36,13 @@ export default function ComboDetailScreen() {
 
   if (!combo) {
     return (
-      <View style={[styles.container, styles.center]}>
+      <View
+        style={[
+          styles.container,
+          styles.center,
+          { backgroundColor: colors.surfaceBg },
+        ]}
+      >
         <AppText variant="h3" color="error">
           Combo not found.
         </AppText>
@@ -68,60 +74,125 @@ export default function ComboDetailScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceBg }]}>
       <GlassSurface
         type="primary"
-        style={[styles.header, { paddingTop: insets.top }]}
+        style={[
+          styles.header,
+          {
+            paddingTop: insets.top,
+            paddingHorizontal: spacing.sm,
+            paddingBottom: spacing.md,
+          },
+        ]}
       >
         <IconButton
           icon={ArrowLeft}
           onPress={() => router.back()}
           glassType="tertiary"
         />
-        <AppText variant="h2" numberOfLines={1} style={styles.title}>
+        <AppText
+          variant="h2"
+          numberOfLines={1}
+          style={[styles.title, { marginHorizontal: spacing.lg }]}
+        >
           {combo.title}
         </AppText>
         <IconButton
           icon={Trash2}
-          color={tokens.theme.colors.error}
+          color={colors.error}
           onPress={handleDelete}
           glassType="tertiary"
         />
       </GlassSurface>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <GlassSurface type="secondary" style={styles.timeCard}>
-          <View style={styles.timeHeader}>
-            <Clock size={20} color={tokens.theme.colors.textPrimary} />
+      <ScrollView
+        contentContainerStyle={[styles.content, { padding: spacing.lg }]}
+      >
+        <GlassSurface
+          type="secondary"
+          style={[
+            styles.timeCard,
+            {
+              padding: spacing.xl,
+              borderRadius: radii.lg,
+              marginBottom: spacing.xxl,
+              borderWidth: 1,
+              borderColor: colors.borderSubtle,
+            },
+          ]}
+        >
+          <View style={[styles.timeHeader, { marginBottom: spacing.xl }]}>
+            <Clock size={20} color={colors.textPrimary} />
             <AppText variant="subtitle" style={styles.timeHeaderLabel}>
               Internal Duration: {watchTime.totalFormatted}
             </AppText>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.speedRow}
+
+          <AppText
+            variant="caption"
+            color="muted"
+            style={[
+              styles.speedLabel,
+              { marginBottom: spacing.sm, marginLeft: spacing.xs },
+            ]}
           >
-            {[1, 1.25, 1.5, 1.75, 2].map((s) => (
-              <Chip
-                key={s}
-                label={`${s}x`}
-                selected={speed === s}
-                onPress={() => setSpeed(s)}
-              />
-            ))}
-          </ScrollView>
-          <View style={styles.timeResult}>
+            Playback Speed
+          </AppText>
+          <View style={[styles.speedInputRow, { marginBottom: spacing.xl }]}>
+            <SpeedInput
+              value={speed}
+              onChange={(s) => {
+                setSpeed(s);
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={[styles.presetScroll, { marginLeft: spacing.md }]}
+              contentContainerStyle={styles.speedRowContent}
+            >
+              {[1, 1.25, 1.5, 1.75, 2, 3, 5].map((s) => (
+                <Chip
+                  key={s}
+                  label={`${s}x`}
+                  selected={speed === s}
+                  onPress={() => {
+                    setSpeed(s);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                />
+              ))}
+            </ScrollView>
+          </View>
+
+          <View
+            style={[
+              styles.timeResult,
+              {
+                borderTopColor: colors.borderSubtle,
+                paddingVertical: spacing.md,
+              },
+            ]}
+          >
             <AppText variant="h1">{watchTime.timeAtSpeedFormatted}</AppText>
             {watchTime.timeSavedSeconds > 0 && (
-              <AppText variant="h4" color="accent" style={styles.savedResult}>
+              <AppText
+                variant="h4"
+                color="accent"
+                style={[styles.savedResult, { marginTop: spacing.xs }]}
+              >
                 You save {watchTime.timeSavedFormatted}
               </AppText>
             )}
           </View>
         </GlassSurface>
 
-        <AppText variant="h4" style={styles.listTitle}>
+        <AppText
+          variant="h4"
+          style={[styles.listTitle, { marginBottom: spacing.md }]}
+        >
           Items ({combo.items.length})
         </AppText>
         {combo.items.map((item, index) => (
@@ -158,39 +229,37 @@ export default function ComboDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: tokens.theme.colors.surfaceBg },
+  container: { flex: 1 },
   center: { justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: tokens.theme.spacing.sm,
-    paddingBottom: tokens.theme.spacing.md,
   },
   title: {
     flex: 1,
     textAlign: 'center',
-    marginHorizontal: tokens.theme.spacing.lg,
   },
-  content: { padding: tokens.theme.spacing.lg },
-  timeCard: {
-    padding: tokens.theme.spacing.xl,
-    borderRadius: tokens.theme.radii.lg,
-    marginBottom: tokens.theme.spacing.xxl,
-  },
+  content: {},
+  timeCard: {},
   timeHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: tokens.theme.spacing.xl,
   },
-  timeHeaderLabel: { marginLeft: tokens.theme.spacing.sm },
-  speedRow: { marginBottom: tokens.theme.spacing.xl },
+  timeHeaderLabel: { marginLeft: 8 },
+  speedLabel: {},
+  speedInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  presetScroll: {
+    flex: 1,
+  },
+  speedRowContent: { gap: 8 },
   timeResult: {
     alignItems: 'center',
-    paddingVertical: tokens.theme.spacing.md,
     borderTopWidth: 1,
-    borderTopColor: tokens.theme.colors.borderSubtle,
   },
-  savedResult: { marginTop: tokens.theme.spacing.xs },
-  listTitle: { marginBottom: tokens.theme.spacing.md },
+  savedResult: {},
+  listTitle: {},
 });

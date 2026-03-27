@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, ViewStyle, StyleProp, DimensionValue } from 'react-native';
+import React, { useEffect, memo } from 'react';
+import { ViewStyle, StyleProp, DimensionValue } from 'react-native';
 import Animated, {
   useAnimatedStyle,
-  useSharedValue,
   withRepeat,
   withTiming,
-  Easing,
+  withSequence,
+  useSharedValue,
 } from 'react-native-reanimated';
-import { tokens } from '@/constants/tokens';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 interface SkeletonProps {
   width?: DimensionValue;
@@ -16,48 +16,41 @@ interface SkeletonProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export const Skeleton = ({
-  width = '100%',
-  height = 20,
-  borderRadius = tokens.theme.radii.sm,
-  style,
-}: SkeletonProps) => {
-  const opacity = useSharedValue(0.4);
+export const Skeleton = memo(
+  ({ width, height, borderRadius, style }: SkeletonProps) => {
+    const { colors, radii } = useAppTheme();
+    const opacity = useSharedValue(0.3);
 
-  useEffect(() => {
-    opacity.value = withRepeat(
-      withTiming(0.8, {
-        duration: 1000,
-        easing: Easing.inOut(Easing.ease),
-      }),
-      -1,
-      true
+    useEffect(() => {
+      opacity.value = withRepeat(
+        withSequence(
+          withTiming(0.6, { duration: 800 }),
+          withTiming(0.3, { duration: 800 })
+        ),
+        -1,
+        true
+      );
+    }, [opacity]);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+      opacity: opacity.value,
+    }));
+
+    const defaultBorderRadius = borderRadius ?? radii.sm;
+
+    return (
+      <Animated.View
+        style={[
+          {
+            width,
+            height,
+            borderRadius: defaultBorderRadius,
+            backgroundColor: colors.glassSecondary,
+          },
+          animatedStyle,
+          style,
+        ]}
+      />
     );
-  }, [opacity]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
-
-  return (
-    <Animated.View
-      style={[
-        styles.skeleton,
-        {
-          width,
-          height,
-          borderRadius,
-          backgroundColor: tokens.theme.colors.glassSecondary,
-        } as ViewStyle,
-        animatedStyle,
-        style,
-      ]}
-    />
-  );
-};
-
-const styles = StyleSheet.create({
-  skeleton: {
-    overflow: 'hidden',
-  },
-});
+  }
+);

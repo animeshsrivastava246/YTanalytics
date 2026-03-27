@@ -29,7 +29,7 @@ export function computeTotalTimeAtSpeed(
   totalSeconds: number,
   playbackSpeed: number
 ): number {
-  const clampedSpeed = Math.min(Math.max(playbackSpeed, 0.25), 3);
+  const clampedSpeed = Math.min(Math.max(playbackSpeed, 0.1), 10);
   return Math.round(totalSeconds / clampedSpeed);
 }
 

@@ -1,120 +1,147 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
-import { WifiOff, AlertTriangle, Activity, Info } from 'lucide-react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
+import {
+  AlertCircle,
+  WifiOff,
+  Database,
+  RefreshCcw,
+  LucideIcon,
+} from 'lucide-react-native';
 import { AppText } from './AppText';
-import { PrimaryButton } from './PrimaryButton';
 import { GlassSurface } from './GlassSurface';
-import { tokens } from '@/constants/tokens';
+import { useAppTheme } from '@/context/ThemeProvider';
 
-export type ErrorType = 'network' | 'api' | 'quota' | 'generic';
+export type ErrorType = 'network' | 'quota' | 'api' | 'generic';
 
 interface ErrorStateProps {
-  type?: ErrorType;
-  message?: string;
+  type: ErrorType;
   onRetry?: () => void;
-  style?: StyleProp<ViewStyle>;
+  message?: string;
 }
 
-export const ErrorState = ({
-  type = 'generic',
-  message,
-  onRetry,
-  style,
-}: ErrorStateProps) => {
-  const getErrorConfig = () => {
-    switch (type) {
-      case 'network':
-        return {
-          Icon: WifiOff,
-          title: "You're offline",
-          description: message || 'Check your connection to load video stats.',
-          actionLabel: 'Tap to Retry',
-          color: tokens.theme.colors.textMuted,
-        };
-      case 'api':
-        return {
-          Icon: AlertTriangle,
-          title: 'Something went wrong',
-          description:
-            message || 'There was an issue communicating with YouTube.',
-          actionLabel: 'Retry',
-          color: tokens.theme.colors.warning,
-        };
-      case 'quota':
-        return {
-          Icon: Activity,
-          title: 'Daily limit reached!',
-          description:
-            message ||
-            'To keep the app free, we limit daily YouTube requests. Check back tomorrow.',
-          actionLabel: null,
-          color: tokens.theme.colors.accentPrimary,
-        };
-      default:
-        return {
-          Icon: Info,
-          title: 'Error',
-          description: message || 'An unexpected error occurred.',
-          actionLabel: 'Retry',
-          color: tokens.theme.colors.error,
-        };
-    }
-  };
+const ERROR_CONFIG: Record<
+  ErrorType,
+  { icon: LucideIcon; title: string; defaultMessage: string; colorKey: string }
+> = {
+  network: {
+    icon: WifiOff,
+    title: 'Network Error',
+    defaultMessage: 'Please check your internet connection.',
+    colorKey: 'textMuted',
+  },
+  quota: {
+    icon: Database,
+    title: 'Quota Exceeded',
+    defaultMessage: 'YouTube API limit reached. Try again later.',
+    colorKey: 'warning',
+  },
+  api: {
+    icon: AlertCircle,
+    title: 'API Error',
+    defaultMessage: 'Something went wrong with the YouTube service.',
+    colorKey: 'accentPrimary',
+  },
+  generic: {
+    icon: AlertCircle,
+    title: 'Unexpected Error',
+    defaultMessage: 'An unknown error occurred.',
+    colorKey: 'error',
+  },
+};
 
-  const config = getErrorConfig();
-  const { Icon } = config;
+export function ErrorState({ type, onRetry, message }: ErrorStateProps) {
+  const { colors, spacing, radii } = useAppTheme();
+  const config = ERROR_CONFIG[type];
+  const Icon = config.icon;
+  const iconColor =
+    colors[config.colorKey as keyof typeof colors] || colors.error;
 
   return (
-    <View style={[styles.container, style]}>
-      <GlassSurface type="secondary" style={styles.card}>
-        <View style={styles.iconWrapper}>
-          <Icon size={48} color={config.color} strokeWidth={1.5} />
+    <View style={[styles.container, { padding: spacing.lg }]}>
+      <GlassSurface
+        type="secondary"
+        style={[
+          styles.content,
+          {
+            padding: spacing.xl,
+            borderRadius: radii.xl,
+            borderColor: colors.borderSubtle,
+          },
+        ]}
+      >
+        <View style={[styles.iconWrapper, { marginBottom: spacing.lg }]}>
+          <Icon size={48} color={iconColor} strokeWidth={1.5} />
         </View>
-        <AppText variant="h3" style={styles.title}>
+
+        <AppText
+          variant="h3"
+          style={[styles.title, { marginBottom: spacing.sm }]}
+        >
           {config.title}
         </AppText>
-        <AppText variant="body" color="muted" style={styles.description}>
-          {config.description}
+        <AppText
+          variant="body"
+          color="muted"
+          style={[styles.message, { marginBottom: spacing.xl }]}
+        >
+          {message || config.defaultMessage}
         </AppText>
-        {onRetry && config.actionLabel && (
-          <PrimaryButton
-            label={config.actionLabel}
+
+        {onRetry && (
+          <Pressable
             onPress={onRetry}
-            style={styles.button}
-          />
+            style={({ pressed }) => [
+              styles.retryButton,
+              {
+                backgroundColor: colors.accentPrimary,
+                borderRadius: radii.pill,
+                paddingVertical: spacing.md,
+                paddingHorizontal: spacing.xl,
+              },
+              pressed && styles.pressed,
+            ]}
+          >
+            <RefreshCcw size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <AppText variant="subtitle" style={styles.retryText}>
+              Try Again
+            </AppText>
+          </Pressable>
         )}
       </GlassSurface>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
-    padding: tokens.theme.spacing.lg,
-    justifyContent: 'center',
+    width: '100%',
     alignItems: 'center',
   },
-  card: {
+  content: {
     width: '100%',
-    padding: tokens.theme.spacing.xl,
-    borderRadius: tokens.theme.radii.xl,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: tokens.theme.colors.borderSubtle,
   },
   iconWrapper: {
-    marginBottom: tokens.theme.spacing.lg,
-    opacity: 0.9,
+    padding: 16,
+    borderRadius: 30,
   },
   title: {
     textAlign: 'center',
-    marginBottom: tokens.theme.spacing.sm,
   },
-  description: {
+  message: {
     textAlign: 'center',
-    marginBottom: tokens.theme.spacing.xl,
   },
-  button: {
-    width: '100%',
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  retryText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  pressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
   },
 });

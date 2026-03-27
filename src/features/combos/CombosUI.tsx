@@ -8,13 +8,14 @@ import { Card } from '@/components/Card';
 import { IconButton } from '@/components/IconButton';
 import { GlassSurface } from '@/components/GlassSurface';
 import { useComboStore, CustomCombo } from '@/features/combos/useComboStore';
-import { tokens } from '@/constants/tokens';
 import { EmptyState } from '@/components/EmptyState';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 export function CombosUI() {
   const { combos } = useComboStore();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { colors, spacing } = useAppTheme();
 
   const handleCreateCombo = () => {
     router.push('/combo/builder');
@@ -26,7 +27,7 @@ export function CombosUI() {
     ({ item, index }: { item: CustomCombo; index: number }) => (
       <Card
         onPress={() => router.push(`/combo/${item.id}`)}
-        style={styles.card}
+        style={[styles.card, { padding: spacing.lg }]}
         index={index}
       >
         <AppText variant="h2">{item.title}</AppText>
@@ -35,14 +36,21 @@ export function CombosUI() {
         </AppText>
       </Card>
     ),
-    [router]
+    [router, spacing.lg]
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceBg }]}>
       <GlassSurface
         type="primary"
-        style={[styles.header, { paddingTop: insets.top }]}
+        style={[
+          styles.header,
+          {
+            paddingTop: insets.top,
+            paddingHorizontal: spacing.lg,
+            paddingBottom: spacing.md,
+          },
+        ]}
       >
         <AppText variant="h1">Your Combos</AppText>
         <IconButton
@@ -59,7 +67,10 @@ export function CombosUI() {
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={[
           styles.listContent,
-          { paddingBottom: insets.bottom + 80 },
+          {
+            padding: spacing.lg,
+            paddingBottom: insets.bottom + 80,
+          },
         ]}
       />
     </View>
@@ -67,17 +78,14 @@ export function CombosUI() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: tokens.theme.colors.surfaceBg },
+  container: { flex: 1 },
   header: {
-    paddingHorizontal: tokens.theme.spacing.lg,
-    paddingBottom: tokens.theme.spacing.md,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     zIndex: 10,
   },
   listContent: {
-    padding: tokens.theme.spacing.lg,
     flexGrow: 1,
   },
   center: {
@@ -85,7 +93,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  card: {
-    padding: tokens.theme.spacing.lg,
-  },
+  card: {},
 });

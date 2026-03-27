@@ -2,56 +2,58 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Skeleton } from './Skeleton';
 import { GlassSurface } from './GlassSurface';
-import { tokens } from '@/constants/tokens';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 interface CardSkeletonProps {
   type?: 'video' | 'playlist' | 'channel';
 }
 
-export const CardSkeleton = ({ type = 'video' }: CardSkeletonProps) => {
-  return (
-    <GlassSurface type="secondary" style={styles.card}>
-      <View style={styles.row}>
-        {/* Thumbnail/Avatar Skeleton */}
-        <View style={styles.thumbnailContainer}>
-          <Skeleton
-            width={type === 'channel' ? 68 : 120}
-            height={68}
-            borderRadius={
-              type === 'channel'
-                ? tokens.theme.radii.pill
-                : tokens.theme.radii.sm
-            }
-          />
-        </View>
+export function CardSkeleton({ type = 'video' }: CardSkeletonProps) {
+  const { colors, spacing, radii } = useAppTheme();
 
-        {/* Info Skeleton */}
-        <View style={styles.info}>
-          <Skeleton width="90%" height={20} style={styles.title} />
-          <Skeleton width="60%" height={20} style={styles.title} />
-          <Skeleton
-            width="40%"
-            height={14}
-            borderRadius={tokens.theme.radii.xs}
-          />
-        </View>
+  return (
+    <GlassSurface
+      type="secondary"
+      style={[
+        styles.container,
+        {
+          padding: spacing.md,
+          marginVertical: spacing.sm,
+          borderRadius: radii.lg,
+          borderColor: colors.borderSubtle,
+        },
+      ]}
+    >
+      <Skeleton
+        width={type === 'channel' ? 60 : 100}
+        height={60}
+        borderRadius={type === 'channel' ? radii.pill : radii.sm}
+        style={{ marginRight: spacing.md }}
+      />
+
+      <View style={styles.content}>
+        <Skeleton
+          width="80%"
+          height={20}
+          borderRadius={radii.xs}
+          style={styles.title}
+        />
+        <Skeleton width="40%" height={16} borderRadius={radii.xs} />
       </View>
     </GlassSurface>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  card: {
-    padding: tokens.theme.spacing.md,
-    marginVertical: tokens.theme.spacing.sm,
-    borderRadius: tokens.theme.radii.lg,
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: tokens.theme.colors.borderSubtle,
   },
-  row: { flexDirection: 'row', alignItems: 'flex-start' },
-  thumbnailContainer: {
-    marginRight: tokens.theme.spacing.md,
+  content: {
+    flex: 1,
   },
-  info: { flex: 1, justifyContent: 'center' },
-  title: { marginBottom: tokens.theme.spacing.xs },
+  title: {
+    marginBottom: 8,
+  },
 });

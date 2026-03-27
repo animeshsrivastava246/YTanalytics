@@ -4,16 +4,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/AppText';
 import { GlassSurface } from '@/components/GlassSurface';
 import { Chip } from '@/components/Chip';
-import { tokens } from '@/constants/tokens';
 import {
   useSettingsStore,
   ThemePreference,
   PlaybackSpeed,
 } from '@/services/settingsStore';
 import * as Haptics from 'expo-haptics';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 export function SettingsUI() {
   const insets = useSafeAreaInsets();
+  const { colors, spacing, radii } = useAppTheme();
   const {
     playbackSpeed,
     theme,
@@ -39,13 +40,10 @@ export function SettingsUI() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceBg }]}>
       <GlassSurface
         type="primary"
-        style={[
-          styles.header,
-          { paddingTop: insets.top + tokens.theme.spacing.md },
-        ]}
+        style={[styles.header, { paddingTop: insets.top + spacing.md }]}
       >
         <AppText variant="h1">Settings</AppText>
       </GlassSurface>
@@ -54,10 +52,24 @@ export function SettingsUI() {
         style={styles.container}
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: insets.bottom + 100 },
+          {
+            padding: spacing.lg,
+            paddingBottom: insets.bottom + 100,
+          },
         ]}
       >
-        <GlassSurface type="secondary" style={styles.card}>
+        <GlassSurface
+          type="secondary"
+          style={[
+            styles.card,
+            {
+              padding: spacing.lg,
+              borderRadius: radii.lg,
+              marginBottom: spacing.md,
+              borderColor: colors.borderSubtle,
+            },
+          ]}
+        >
           <AppText variant="h3" style={styles.sectionTitle}>
             Default Playback Speed
           </AppText>
@@ -66,7 +78,7 @@ export function SettingsUI() {
             app.
           </AppText>
 
-          <View style={styles.speedRow}>
+          <View style={[styles.speedRow, { gap: spacing.sm }]}>
             {([1, 1.25, 1.5, 1.75, 2] as const).map((speed) => (
               <Chip
                 key={speed}
@@ -79,11 +91,22 @@ export function SettingsUI() {
           </View>
         </GlassSurface>
 
-        <GlassSurface type="secondary" style={styles.card}>
+        <GlassSurface
+          type="secondary"
+          style={[
+            styles.card,
+            {
+              padding: spacing.lg,
+              borderRadius: radii.lg,
+              marginBottom: spacing.md,
+              borderColor: colors.borderSubtle,
+            },
+          ]}
+        >
           <AppText variant="h3" style={styles.sectionTitle}>
             Theme
           </AppText>
-          <View style={styles.speedRow}>
+          <View style={[styles.speedRow, { gap: spacing.sm }]}>
             {(['system', 'light', 'dark'] as const).map((t) => (
               <Chip
                 key={t}
@@ -96,7 +119,19 @@ export function SettingsUI() {
           </View>
         </GlassSurface>
 
-        <GlassSurface type="secondary" style={[styles.card, styles.toggleRow]}>
+        <GlassSurface
+          type="secondary"
+          style={[
+            styles.card,
+            styles.toggleRow,
+            {
+              padding: spacing.lg,
+              borderRadius: radii.lg,
+              marginBottom: spacing.md,
+              borderColor: colors.borderSubtle,
+            },
+          ]}
+        >
           <View style={styles.toggleText}>
             <AppText variant="subtitle">Reduce Transparency</AppText>
             <AppText variant="caption" color="muted">
@@ -106,7 +141,7 @@ export function SettingsUI() {
           <Switch
             value={reduceTransparency}
             onValueChange={handleTransparencyToggle}
-            trackColor={{ true: tokens.theme.colors.success }}
+            trackColor={{ true: colors.success }}
           />
         </GlassSurface>
 
@@ -119,28 +154,21 @@ export function SettingsUI() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: tokens.theme.colors.surfaceBg },
+  container: { flex: 1 },
   header: {
-    paddingHorizontal: tokens.theme.spacing.lg,
-    paddingBottom: tokens.theme.spacing.lg,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
     zIndex: 10,
   },
-  content: {
-    padding: tokens.theme.spacing.lg,
-  },
+  content: {},
   card: {
-    padding: tokens.theme.spacing.lg,
-    borderRadius: tokens.theme.radii.lg,
-    marginBottom: tokens.theme.spacing.md,
     borderWidth: 1,
-    borderColor: tokens.theme.colors.borderSubtle,
   },
   sectionTitle: { marginBottom: 8 },
   description: { marginBottom: 16 },
   speedRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: tokens.theme.spacing.sm,
   },
   chip: { marginBottom: 0 },
   toggleRow: {

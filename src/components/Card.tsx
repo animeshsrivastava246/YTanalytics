@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { GlassSurface } from './GlassSurface';
-import { tokens } from '@/constants/tokens';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 interface CardProps {
   onPress?: () => void;
@@ -26,6 +26,7 @@ interface CardProps {
 
 export const Card = memo(
   ({ onPress, children, style, contentStyle, index }: CardProps) => {
+    const { colors, spacing, radii } = useAppTheme();
     const pressed = useSharedValue(0);
 
     const handlePressIn = useCallback(() => {
@@ -57,7 +58,15 @@ export const Card = memo(
       <GlassSurface
         type="secondary"
         isInteractive={!!onPress}
-        style={[styles.surface, contentStyle]}
+        style={[
+          styles.surface,
+          {
+            borderRadius: radii.lg,
+            padding: spacing.lg,
+            borderColor: colors.borderSubtle,
+          },
+          contentStyle,
+        ]}
       >
         {children}
       </GlassSurface>
@@ -70,7 +79,7 @@ export const Card = memo(
             ? FadeInDown.delay(index * 50).springify()
             : undefined
         }
-        style={[styles.marginWrapper, style]}
+        style={[styles.marginWrapper, { marginVertical: spacing.sm }, style]}
       >
         {onPress ? (
           <Pressable
@@ -91,16 +100,11 @@ export const Card = memo(
 );
 
 const styles = StyleSheet.create({
-  marginWrapper: {
-    marginVertical: tokens.theme.spacing.sm,
-  },
+  marginWrapper: {},
   pressableContainer: {
     width: '100%',
   },
   surface: {
-    borderRadius: tokens.theme.radii.lg,
-    padding: tokens.theme.spacing.lg,
     borderWidth: 1,
-    borderColor: tokens.theme.colors.borderSubtle,
   },
 });

@@ -1,105 +1,83 @@
-import { tokens } from '@/constants/tokens';
-import * as Haptics from 'expo-haptics';
-import React, { memo, useCallback } from 'react';
-import { Pressable, StyleProp, StyleSheet, ViewStyle } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import React from 'react';
+import {
+  StyleSheet,
+  Pressable,
+  ViewStyle,
+  StyleProp,
+  ActivityIndicator,
+} from 'react-native';
 import { AppText } from './AppText';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 interface PrimaryButtonProps {
   label: string;
   onPress: () => void;
-  variant?: 'solid' | 'glass';
+  variant?: 'primary' | 'secondary';
   loading?: boolean;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-export const PrimaryButton = memo(
-  ({
-    label,
-    onPress,
-    variant = 'solid',
-    loading,
-    disabled,
-    style,
-  }: PrimaryButtonProps) => {
-    const pressed = useSharedValue(0);
+export function PrimaryButton({
+  label,
+  onPress,
+  variant = 'primary',
+  loading = false,
+  disabled = false,
+  style,
+}: PrimaryButtonProps) {
+  const { colors, spacing, radii } = useAppTheme();
 
-    const handlePressIn = useCallback(() => {
-      pressed.value = withSpring(1, {
-        mass: 1,
-        damping: 15,
-        stiffness: 300,
-      });
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }, [pressed]);
-
-    const handlePressOut = useCallback(() => {
-      pressed.value = withSpring(0, {
-        mass: 1,
-        damping: 15,
-        stiffness: 300,
-      });
-    }, [pressed]);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled || loading}
+      style={({ pressed }) => [
+        styles.container,
         {
-          scale: 1 - pressed.value * 0.05, // 1 to 0.95
+          paddingVertical: spacing.lg,
+          paddingHorizontal: spacing.xl,
+          borderRadius: radii.pill,
+          backgroundColor:
+            variant === 'primary'
+              ? colors.accentPrimary
+              : colors.glassSecondary,
         },
-      ],
-    }));
-
-    return (
-      <Pressable
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled || loading}
-      >
-        <Animated.View
-          style={[
-            styles.base,
-            variant === 'solid' ? styles.solid : styles.glass,
-            animatedStyle,
-            style,
-          ]}
+        pressed && styles.pressed,
+        disabled && styles.disabled,
+        style,
+      ]}
+    >
+      {loading ? (
+        <ActivityIndicator
+          color={variant === 'primary' ? '#FFFFFF' : colors.accentPrimary}
+        />
+      ) : (
+        <AppText
+          variant="subtitle"
+          style={{
+            color: variant === 'primary' ? '#FFFFFF' : colors.accentPrimary,
+            fontWeight: '600',
+          }}
         >
-          <AppText
-            variant="subtitle"
-            color={variant === 'solid' ? 'primary' : 'muted'}
-            style={[styles.text, (loading || disabled) && styles.textDisabled]}
-          >
-            {loading ? 'Wait...' : label}
-          </AppText>
-        </Animated.View>
-      </Pressable>
-    );
-  }
-);
+          {label}
+        </AppText>
+      )}
+    </Pressable>
+  );
+}
 
 const styles = StyleSheet.create({
-  base: {
-    paddingVertical: tokens.theme.spacing.lg,
-    paddingHorizontal: tokens.theme.spacing.xl,
-    borderRadius: tokens.theme.radii.pill,
+  container: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  solid: {
-    backgroundColor: tokens.theme.colors.accentPrimary,
+  pressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
   },
-  glass: {
-    backgroundColor: tokens.theme.colors.glassSecondary,
-  },
-  text: {
-    textAlign: 'center',
-  },
-  textDisabled: {
-    opacity: 0.6,
+  disabled: {
+    opacity: 0.5,
   },
 });

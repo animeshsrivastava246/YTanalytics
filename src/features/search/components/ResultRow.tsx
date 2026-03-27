@@ -5,8 +5,8 @@ import { Image } from 'expo-image';
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { StatPill } from '@/components/StatPill';
-import { tokens } from '@/constants/tokens';
 import { RawYouTubeSearchItem } from '@/services/youtube.types';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 type SearchType = 'video' | 'playlist' | 'channel';
 
@@ -33,6 +33,7 @@ interface ResultRowProps {
 
 export const ResultRow = memo(({ item, type, index }: ResultRowProps) => {
   const router = useRouter();
+  const { colors, spacing, radii } = useAppTheme();
 
   const handlePress = useCallback(() => {
     const rawId = item.id;
@@ -71,23 +72,44 @@ export const ResultRow = memo(({ item, type, index }: ResultRowProps) => {
   const durationFormatted = safeItem.durationFormatted as string | undefined;
 
   return (
-    <Card onPress={handlePress} contentStyle={styles.card} index={index}>
+    <Card
+      onPress={handlePress}
+      contentStyle={[styles.card, { padding: spacing.md }]}
+      index={index}
+    >
       <View style={styles.row}>
-        <View style={styles.thumbnailContainer}>
+        <View style={[styles.thumbnailContainer, { marginRight: spacing.md }]}>
           <Image
             source={{ uri: thumbnailUrl }}
-            style={type === 'channel' ? styles.avatar : styles.thumbnail}
+            style={[
+              type === 'channel' ? styles.avatar : styles.thumbnail,
+              { borderRadius: type === 'channel' ? radii.pill : radii.sm },
+            ]}
             contentFit="cover"
           />
           {type === 'video' && !!durationFormatted && (
-            <StatPill value={durationFormatted} style={styles.durationBadge} />
+            <StatPill
+              value={durationFormatted}
+              style={[
+                styles.durationBadge,
+                {
+                  bottom: spacing.xs,
+                  right: spacing.xs,
+                  backgroundColor: colors.scrimDark,
+                },
+              ]}
+            />
           )}
         </View>
         <View style={styles.info}>
           <AppText variant="subtitle" numberOfLines={2}>
             {title}
           </AppText>
-          <AppText variant="caption" color="muted" style={styles.channelName}>
+          <AppText
+            variant="caption"
+            color="muted"
+            style={[styles.channelName, { marginTop: spacing.xs }]}
+          >
             {channelTitle || 'Unknown Channel'}
           </AppText>
         </View>
@@ -97,28 +119,22 @@ export const ResultRow = memo(({ item, type, index }: ResultRowProps) => {
 });
 
 const styles = StyleSheet.create({
-  card: { padding: tokens.theme.spacing.md },
+  card: {},
   row: { flexDirection: 'row', alignItems: 'flex-start' },
   thumbnailContainer: {
     position: 'relative',
-    marginRight: tokens.theme.spacing.md,
   },
   thumbnail: {
     width: 120,
     height: 68,
-    borderRadius: tokens.theme.radii.sm,
   },
   avatar: {
     width: 68,
     height: 68,
-    borderRadius: tokens.theme.radii.pill,
   },
   durationBadge: {
     position: 'absolute',
-    bottom: tokens.theme.spacing.xs,
-    right: tokens.theme.spacing.xs,
-    backgroundColor: tokens.theme.colors.scrimDark,
   },
   info: { flex: 1, justifyContent: 'center' },
-  channelName: { marginTop: tokens.theme.spacing.xs },
+  channelName: {},
 });

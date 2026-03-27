@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -12,21 +12,27 @@ import * as Haptics from 'expo-haptics';
 import { AppText } from '@/components/AppText';
 import { GlassSurface } from '@/components/GlassSurface';
 import { Chip } from '@/components/Chip';
-import { tokens } from '@/constants/tokens';
 import { SavedComboCard } from './components/SavedComboCard';
 import { useSettingsStore } from '@/services/settingsStore';
+import { useComboStore } from '@/features/combos/useComboStore';
 import { EmptyState } from '@/components/EmptyState';
+import { useAppTheme } from '@/context/ThemeProvider';
 
-// Mock Data
-const SAVED_COMBOS = [
-  { id: '1', title: 'Learn React Native', itemsCount: 12, duration: '4:20:15' },
-  { id: '2', title: 'Design Inspiration', itemsCount: 5, duration: '1:15:00' },
-  { id: '3', title: 'Workout Mix', itemsCount: 20, duration: '3:45:00' },
-];
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good Morning';
+  if (hour < 18) return 'Good Afternoon';
+  return 'Good Evening';
+}
 
 export function HomeUI() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { colors, spacing, radii } = useAppTheme();
   const { searchHistory } = useSettingsStore();
+  const { combos } = useComboStore();
+
+  const greeting = useMemo(() => getGreeting(), []);
 
   const searchPressed = useSharedValue(0);
   const viewAllPressed = useSharedValue(0);
@@ -66,27 +72,43 @@ export function HomeUI() {
   }, [viewAllPressed]);
 
   const searchAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 - searchPressed.value * 0.02 }], // 1 to 0.98
+    transform: [{ scale: 1 - searchPressed.value * 0.02 }],
   }));
 
   const viewAllAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 - viewAllPressed.value * 0.05 }], // 1 to 0.95
+    transform: [{ scale: 1 - viewAllPressed.value * 0.05 }],
   }));
 
+  // Show at most 3 combos on home screen
+  const previewCombos = combos.slice(0, 3);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceBg }]}>
       {/* Hero Header */}
       <GlassSurface
         type="primary"
         style={[
           styles.header,
-          { paddingTop: insets.top + tokens.theme.spacing.md },
+          {
+            paddingTop: insets.top + spacing.md,
+            paddingHorizontal: spacing.xl,
+            paddingBottom: spacing.xl,
+            borderBottomLeftRadius: radii.xl,
+            borderBottomRightRadius: radii.xl,
+          },
         ]}
       >
-        <AppText variant="h1" style={styles.title}>
-          Good Morning
+        <AppText
+          variant="h1"
+          style={[styles.title, { marginBottom: spacing.xs }]}
+        >
+          {greeting}
         </AppText>
-        <AppText variant="body" color="muted" style={styles.subtitle}>
+        <AppText
+          variant="body"
+          color="muted"
+          style={[styles.subtitle, { marginBottom: spacing.xl }]}
+        >
           Ready to save some time today?
         </AppText>
 
@@ -95,14 +117,28 @@ export function HomeUI() {
             onPressIn={handleSearchPressIn}
             onPressOut={handleSearchPressOut}
           >
-            <Animated.View style={[styles.searchBar, searchAnimatedStyle]}>
+            <Animated.View
+              style={[
+                styles.searchBar,
+                {
+                  padding: spacing.lg,
+                  borderRadius: radii.lg,
+                  borderColor: colors.borderSubtle,
+                },
+                searchAnimatedStyle,
+              ]}
+            >
               <GlassSurface
                 type="secondary"
                 isInteractive
                 style={StyleSheet.absoluteFillObject}
               />
-              <Search color={tokens.theme.colors.textMuted} size={20} />
-              <AppText variant="body" color="muted" style={styles.searchText}>
+              <Search color={colors.textMuted} size={20} />
+              <AppText
+                variant="body"
+                color="muted"
+                style={[styles.searchText, { marginLeft: spacing.md }]}
+              >
                 Search videos, playlists...
               </AppText>
             </Animated.View>
@@ -113,11 +149,19 @@ export function HomeUI() {
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: insets.bottom + 100 },
+          {
+            paddingVertical: spacing.xl,
+            paddingBottom: insets.bottom + 100,
+          },
         ]}
       >
         {/* Recent Searches Section */}
-        <View style={styles.sectionHeader}>
+        <View
+          style={[
+            styles.sectionHeader,
+            { paddingHorizontal: spacing.xl, marginBottom: spacing.md },
+          ]}
+        >
           <AppText variant="h3">Recent Searches</AppText>
         </View>
 
@@ -126,14 +170,19 @@ export function HomeUI() {
             horizontal
             showsHorizontalScrollIndicator={false}
             style={styles.horizontalScroll}
-            contentContainerStyle={styles.horizontalScrollContent}
+            contentContainerStyle={[
+              styles.horizontalScrollContent,
+              { paddingHorizontal: spacing.xl, paddingBottom: spacing.md },
+            ]}
           >
             {searchHistory.map((search) => (
               <Chip
                 key={search}
                 label={search}
                 selected={false}
-                onPress={() => {}}
+                onPress={() =>
+                  router.push(`/search?q=${encodeURIComponent(search)}`)
+                }
               />
             ))}
           </ScrollView>
@@ -147,7 +196,16 @@ export function HomeUI() {
         )}
 
         {/* Saved Combos Section */}
-        <View style={[styles.sectionHeader, styles.marginTopLg]}>
+        <View
+          style={[
+            styles.sectionHeader,
+            {
+              paddingHorizontal: spacing.xl,
+              marginBottom: spacing.md,
+              marginTop: spacing.xxl,
+            },
+          ]}
+        >
           <AppText variant="h3">Saved Combos</AppText>
           <Link href="/combos" asChild>
             <Pressable
@@ -163,15 +221,24 @@ export function HomeUI() {
           </Link>
         </View>
 
-        <View style={styles.combosList}>
-          {SAVED_COMBOS.map((combo, index) => (
-            <SavedComboCard
-              key={combo.id}
-              combo={combo}
-              index={index}
-              onPress={() => {}}
+        <View style={[styles.combosList, { paddingHorizontal: spacing.xl }]}>
+          {previewCombos.length > 0 ? (
+            previewCombos.map((combo, index) => (
+              <SavedComboCard
+                key={combo.id}
+                combo={combo}
+                index={index}
+                onPress={() => router.push(`/combo/${combo.id}`)}
+              />
+            ))
+          ) : (
+            <EmptyState
+              type="combos"
+              title="No Combos Yet"
+              description="Tap 'Combos' to build your first watch-time group."
+              isStatic
             />
-          ))}
+          )}
         </View>
       </ScrollView>
     </View>
@@ -179,53 +246,30 @@ export function HomeUI() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: tokens.theme.colors.surfaceBg },
+  container: { flex: 1 },
   header: {
-    paddingHorizontal: tokens.theme.spacing.xl,
-    paddingBottom: tokens.theme.spacing.xl,
-    borderBottomLeftRadius: tokens.theme.radii.xl,
-    borderBottomRightRadius: tokens.theme.radii.xl,
     zIndex: 10,
   },
-  title: {
-    marginBottom: tokens.theme.spacing.xs,
-  },
-  subtitle: {
-    marginBottom: tokens.theme.spacing.xl,
-  },
+  title: {},
+  subtitle: {},
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: tokens.theme.spacing.lg,
-    borderRadius: tokens.theme.radii.lg,
     borderWidth: 1,
-    borderColor: tokens.theme.colors.borderSubtle,
     overflow: 'hidden',
   },
-  searchText: {
-    marginLeft: tokens.theme.spacing.md,
-  },
-  content: {
-    paddingVertical: tokens.theme.spacing.xl,
-  },
+  searchText: {},
+  content: {},
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: tokens.theme.spacing.xl,
-    marginBottom: tokens.theme.spacing.md,
-  },
-  marginTopLg: {
-    marginTop: tokens.theme.spacing.xxl,
   },
   horizontalScroll: {
     flexGrow: 0,
   },
   horizontalScrollContent: {
-    paddingHorizontal: tokens.theme.spacing.xl,
-    paddingBottom: tokens.theme.spacing.md,
+    gap: 8,
   },
-  combosList: {
-    paddingHorizontal: tokens.theme.spacing.xl,
-  },
+  combosList: {},
 });

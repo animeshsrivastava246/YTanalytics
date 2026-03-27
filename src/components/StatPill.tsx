@@ -1,51 +1,66 @@
-import React, { memo } from 'react';
-import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
 import { LucideIcon } from 'lucide-react-native';
 import { AppText } from './AppText';
 import { GlassSurface } from './GlassSurface';
-import { tokens } from '@/constants/tokens';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 interface StatPillProps {
-  icon?: LucideIcon;
+  icon: LucideIcon;
+  label?: string;
   value: string;
-  color?: string;
-  style?: StyleProp<ViewStyle>;
 }
 
-export const StatPill = memo(
-  ({ icon: Icon, value, color, style }: StatPillProps) => {
-    const textColor = color || tokens.theme.colors.textPrimary;
+export function StatPill({ icon: Icon, label, value }: StatPillProps) {
+  const { colors, spacing, radii } = useAppTheme();
 
-    return (
-      <View style={[styles.wrapper, style]}>
-        <GlassSurface type="tertiary" style={styles.surface}>
-          <View style={styles.content}>
-            {Icon && <Icon size={12} color={textColor} style={styles.icon} />}
-            <AppText variant="caption" style={{ color: textColor }}>
-              {value}
-            </AppText>
-          </View>
-        </GlassSurface>
-      </View>
-    );
-  }
-);
+  return (
+    <View style={styles.container}>
+      <GlassSurface
+        type="secondary"
+        style={[
+          styles.pill,
+          {
+            paddingVertical: spacing.xs,
+            paddingHorizontal: spacing.sm,
+            borderRadius: radii.pill,
+            borderColor: colors.borderSubtle,
+          },
+        ]}
+      >
+        <Icon size={14} color={colors.accentPrimary} strokeWidth={2} />
+        {label && (
+          <AppText
+            variant="caption"
+            color="muted"
+            style={[styles.label, { marginLeft: spacing.xs }]}
+          >
+            {label}:
+          </AppText>
+        )}
+        <AppText
+          variant="caption"
+          style={[
+            styles.value,
+            { marginLeft: spacing.xs, color: colors.textPrimary },
+          ]}
+        >
+          {value}
+        </AppText>
+      </GlassSurface>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
-  wrapper: {
-    borderRadius: tokens.theme.radii.xs,
-    overflow: 'hidden',
-    alignSelf: 'flex-start',
-  },
-  surface: {
-    paddingHorizontal: tokens.theme.spacing.sm,
-    paddingVertical: 2,
-  },
-  content: {
+  container: {},
+  pill: {
     flexDirection: 'row',
     alignItems: 'center',
+    borderWidth: 1,
   },
-  icon: {
-    marginRight: 4,
+  label: {},
+  value: {
+    fontWeight: '600',
   },
 });

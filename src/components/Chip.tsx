@@ -15,7 +15,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { AppText } from './AppText';
 import { GlassSurface } from './GlassSurface';
-import { tokens } from '@/constants/tokens';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 interface ChipProps {
   label: string;
@@ -25,6 +25,7 @@ interface ChipProps {
 }
 
 export const Chip = memo(({ label, selected, onPress, style }: ChipProps) => {
+  const { colors, spacing, radii } = useAppTheme();
   const pressed = useSharedValue(0);
 
   const handlePressIn = useCallback(() => {
@@ -51,15 +52,11 @@ export const Chip = memo(({ label, selected, onPress, style }: ChipProps) => {
       },
     ],
     backgroundColor: withTiming(
-      selected
-        ? tokens.theme.colors.accentSecondary
-        : tokens.theme.colors.glassSecondary,
+      selected ? colors.accentSecondary : colors.glassSecondary,
       { duration: 150 }
     ),
     borderColor: withTiming(
-      selected
-        ? tokens.theme.colors.accentSecondary
-        : tokens.theme.colors.borderSubtle,
+      selected ? colors.accentSecondary : colors.borderSubtle,
       { duration: 150 }
     ),
   }));
@@ -70,9 +67,31 @@ export const Chip = memo(({ label, selected, onPress, style }: ChipProps) => {
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
     >
-      <Animated.View style={[styles.container, animatedStyle, style]}>
-        <GlassSurface type="tertiary" isInteractive style={styles.glassSurface}>
-          <View style={styles.content}>
+      <Animated.View
+        style={[
+          styles.container,
+          {
+            borderRadius: radii.pill,
+            marginRight: spacing.sm,
+          },
+          animatedStyle,
+          style,
+        ]}
+      >
+        <GlassSurface
+          type="tertiary"
+          isInteractive
+          style={[styles.glassSurface, { borderRadius: radii.pill }]}
+        >
+          <View
+            style={[
+              styles.content,
+              {
+                paddingVertical: spacing.sm,
+                paddingHorizontal: spacing.lg,
+              },
+            ]}
+          >
             <AppText variant="caption" color={selected ? 'primary' : 'muted'}>
               {label}
             </AppText>
@@ -85,16 +104,9 @@ export const Chip = memo(({ label, selected, onPress, style }: ChipProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: tokens.theme.radii.pill,
     borderWidth: 1,
     overflow: 'hidden',
-    marginRight: tokens.theme.spacing.sm,
   },
-  glassSurface: {
-    borderRadius: tokens.theme.radii.pill,
-  },
-  content: {
-    paddingVertical: tokens.theme.spacing.sm,
-    paddingHorizontal: tokens.theme.spacing.lg,
-  },
+  glassSurface: {},
+  content: {},
 });

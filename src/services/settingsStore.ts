@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
-export type PlaybackSpeed = 1 | 1.25 | 1.5 | 1.75 | 2;
+export type PlaybackSpeed = number;
 
 interface SettingsState {
   playbackSpeed: PlaybackSpeed;

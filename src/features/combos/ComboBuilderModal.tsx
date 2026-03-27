@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, FlatList } from 'react-native';
+import { View, StyleSheet, TextInput, FlatList, TextStyle } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useComboStore, ComboItem } from './useComboStore';
@@ -8,15 +8,16 @@ import { AppText } from '@/components/AppText';
 import { IconButton } from '@/components/IconButton';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { ArrowLeft, Plus, Search, Trash2 } from 'lucide-react-native';
-import { tokens } from '@/constants/tokens';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSearch } from '@/hooks/useYouTube';
 import { ResultRow } from '@/features/search/components/ResultRow';
 import { RawYouTubeSearchItem } from '@/services/youtube.types';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 export function ComboBuilderModal() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, spacing, radii, typography } = useAppTheme();
   const { addCombo } = useComboStore();
 
   const [title, setTitle] = useState('');
@@ -49,7 +50,7 @@ export function ComboBuilderModal() {
   };
 
   const renderSearchItem = ({ item }: { item: RawYouTubeSearchItem }) => (
-    <View style={styles.searchRowWrapper}>
+    <View style={[styles.searchRowWrapper, { marginBottom: spacing.md }]}>
       <View style={styles.searchRowContent}>
         <ResultRow item={item} type="video" />
       </View>
@@ -57,15 +58,25 @@ export function ComboBuilderModal() {
         icon={Plus}
         onPress={() => handleAddItem(item)}
         glassType="tertiary"
-        color={tokens.theme.colors.accentPrimary}
-        style={styles.addButton}
+        color={colors.accentPrimary}
+        style={[styles.addButton, { marginLeft: spacing.sm }]}
       />
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <GlassSurface type="primary" style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceBg }]}>
+      <GlassSurface
+        type="primary"
+        style={[
+          styles.header,
+          {
+            paddingTop: insets.top,
+            paddingHorizontal: spacing.sm,
+            paddingBottom: spacing.sm,
+          },
+        ]}
+      >
         <IconButton icon={ArrowLeft} onPress={() => router.back()} />
         <AppText variant="h3" style={styles.headerTitle}>
           Build Combo
@@ -74,32 +85,68 @@ export function ComboBuilderModal() {
           label="Save"
           onPress={handleSave}
           disabled={!title.trim() || cart.length === 0}
-          style={styles.saveBtn}
+          style={{
+            paddingVertical: spacing.xs,
+            paddingHorizontal: spacing.md,
+          }}
         />
       </GlassSurface>
 
-      <View style={styles.inputSection}>
+      <View style={[styles.inputSection, { padding: spacing.lg }]}>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: colors.glassSecondary,
+              color: colors.textPrimary,
+              fontSize: typography.h3.fontSize,
+              padding: spacing.lg,
+              borderRadius: radii.lg,
+              fontWeight:
+                (typography.h3.fontWeight as TextStyle['fontWeight']) || '600',
+            },
+          ]}
           placeholder="Combo Title..."
-          placeholderTextColor={tokens.theme.colors.textMuted}
+          placeholderTextColor={colors.textMuted}
           value={title}
           onChangeText={setTitle}
         />
       </View>
 
-      <View style={styles.cartSection}>
-        <AppText variant="h4" style={styles.sectionTitle}>
+      <View
+        style={[
+          styles.cartSection,
+          {
+            paddingHorizontal: spacing.lg,
+            paddingBottom: spacing.lg,
+          },
+        ]}
+      >
+        <AppText
+          variant="h4"
+          style={[styles.sectionTitle, { marginBottom: spacing.sm }]}
+        >
           Cart ({cart.length})
         </AppText>
         {cart.length > 0 ? (
           <View>
             {cart.map((c) => (
-              <View key={c.id} style={styles.cartItemRow}>
+              <View
+                key={c.id}
+                style={[
+                  styles.cartItemRow,
+                  {
+                    backgroundColor: colors.glassSecondary,
+                    padding: spacing.sm,
+                    borderRadius: radii.sm,
+                    marginBottom: spacing.xs,
+                  },
+                ]}
+              >
                 <AppText
                   variant="body"
                   numberOfLines={1}
-                  style={styles.cartItemTitle}
+                  style={[styles.cartItemTitle, { marginRight: spacing.sm }]}
                 >
                   {c.title}
                 </AppText>
@@ -107,7 +154,7 @@ export function ComboBuilderModal() {
                   icon={Trash2}
                   size={16}
                   onPress={() => handleRemoveItem(c.id)}
-                  color={tokens.theme.colors.error}
+                  color={colors.error}
                 />
               </View>
             ))}
@@ -119,13 +166,38 @@ export function ComboBuilderModal() {
         )}
       </View>
 
-      <GlassSurface type="secondary" style={styles.searchSection}>
-        <View style={styles.searchBar}>
-          <Search color={tokens.theme.colors.textMuted} size={20} />
+      <GlassSurface
+        type="secondary"
+        style={[
+          styles.searchSection,
+          {
+            borderTopLeftRadius: radii.xl,
+            borderTopRightRadius: radii.xl,
+          },
+        ]}
+      >
+        <View
+          style={[
+            styles.searchBar,
+            {
+              backgroundColor: colors.scrimLight,
+              margin: spacing.lg,
+              padding: spacing.md,
+              borderRadius: radii.md,
+            },
+          ]}
+        >
+          <Search color={colors.textMuted} size={20} />
           <TextInput
-            style={styles.searchInput}
+            style={[
+              styles.searchInput,
+              {
+                marginLeft: spacing.md,
+                color: colors.textPrimary,
+              },
+            ]}
             placeholder="Search YouTube..."
-            placeholderTextColor={tokens.theme.colors.textMuted}
+            placeholderTextColor={colors.textMuted}
             value={query}
             onChangeText={setQuery}
           />
@@ -136,7 +208,7 @@ export function ComboBuilderModal() {
           keyExtractor={(item, index) => item.id?.videoId || String(index)}
           renderItem={renderSearchItem}
           contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
-          style={styles.searchResults}
+          style={[styles.searchResults, { paddingHorizontal: spacing.lg }]}
         />
       </GlassSurface>
     </View>
@@ -144,65 +216,36 @@ export function ComboBuilderModal() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: tokens.theme.colors.surfaceBg },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: tokens.theme.spacing.sm,
-    paddingBottom: tokens.theme.spacing.sm,
   },
   headerTitle: { flex: 1, textAlign: 'center' },
-  saveBtn: {
-    paddingVertical: tokens.theme.spacing.xs,
-    paddingHorizontal: tokens.theme.spacing.md,
-  },
-  inputSection: { padding: tokens.theme.spacing.lg },
-  input: {
-    backgroundColor: tokens.theme.colors.glassSecondary,
-    color: tokens.theme.colors.textPrimary,
-    fontSize: tokens.theme.typography.h3.fontSize,
-    padding: tokens.theme.spacing.lg,
-    borderRadius: tokens.theme.radii.lg,
-    fontWeight: tokens.theme.typography.h3.fontWeight,
-  },
-  cartSection: {
-    paddingHorizontal: tokens.theme.spacing.lg,
-    paddingBottom: tokens.theme.spacing.lg,
-  },
-  sectionTitle: { marginBottom: tokens.theme.spacing.sm },
+  inputSection: {},
+  input: {},
+  cartSection: {},
+  sectionTitle: {},
   cartItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: tokens.theme.colors.glassSecondary,
-    padding: tokens.theme.spacing.sm,
-    borderRadius: tokens.theme.radii.sm,
-    marginBottom: tokens.theme.spacing.xs,
   },
-  cartItemTitle: { flex: 1, marginRight: tokens.theme.spacing.sm },
+  cartItemTitle: { flex: 1 },
   searchSection: {
     flex: 1,
-    borderTopLeftRadius: tokens.theme.radii.xl,
-    borderTopRightRadius: tokens.theme.radii.xl,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: tokens.theme.colors.scrimLight,
-    margin: tokens.theme.spacing.lg,
-    padding: tokens.theme.spacing.md,
-    borderRadius: tokens.theme.radii.md,
   },
   searchInput: {
     flex: 1,
-    marginLeft: tokens.theme.spacing.md,
-    color: tokens.theme.colors.textPrimary,
   },
-  searchResults: { paddingHorizontal: tokens.theme.spacing.lg },
+  searchResults: {},
   searchRowWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: tokens.theme.spacing.md,
   },
-  addButton: { marginLeft: tokens.theme.spacing.sm },
+  addButton: {},
   searchRowContent: { flex: 1 },
 });

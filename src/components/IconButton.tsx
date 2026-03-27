@@ -1,114 +1,66 @@
-import React, { memo, useCallback } from 'react';
-import Animated, {
-  useAnimatedStyle,
-  withSpring,
-  useSharedValue,
-} from 'react-native-reanimated';
-import {
-  StyleSheet,
-  ViewStyle,
-  StyleProp,
-  View,
-  Pressable,
-} from 'react-native';
-import * as Haptics from 'expo-haptics';
+import React from 'react';
+import { StyleSheet, Pressable, ViewStyle, StyleProp } from 'react-native';
 import { LucideIcon } from 'lucide-react-native';
-import { GlassSurface } from './GlassSurface';
-import { tokens } from '@/constants/tokens';
+import { GlassSurface, GlassType } from './GlassSurface';
+import { useAppTheme } from '@/context/ThemeProvider';
 
 interface IconButtonProps {
   icon: LucideIcon;
+  onPress: () => void;
+  glassType?: GlassType;
   size?: number;
   color?: string;
-  onPress?: () => void;
-  glassType?: 'tertiary' | 'none';
   style?: StyleProp<ViewStyle>;
+  disabled?: boolean;
 }
 
-export const IconButton = memo(
-  ({
-    icon: Icon,
-    size = 24,
-    color,
-    onPress,
-    glassType = 'tertiary',
-    style,
-  }: IconButtonProps) => {
-    const pressed = useSharedValue(0);
+export function IconButton({
+  icon: Icon,
+  onPress,
+  glassType = 'secondary',
+  size = 24,
+  color,
+  style,
+  disabled = false,
+}: IconButtonProps) {
+  const { colors, spacing, radii } = useAppTheme();
+  const iconColor = color || colors.textPrimary;
 
-    const handlePressIn = useCallback(() => {
-      pressed.value = withSpring(1, {
-        mass: 1,
-        damping: 15,
-        stiffness: 300,
-      });
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }, [pressed]);
-
-    const handlePressOut = useCallback(() => {
-      pressed.value = withSpring(0, {
-        mass: 1,
-        damping: 15,
-        stiffness: 300,
-      });
-    }, [pressed]);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={({ pressed }) => [
+        styles.container,
         {
-          scale: 1 - pressed.value * 0.05, // 1 to 0.95
+          padding: spacing.md,
+          borderRadius: radii.pill,
         },
-      ],
-    }));
-
-    const iconColor = color || tokens.theme.colors.textPrimary;
-
-    const content = (
-      <View style={[styles.base, style]}>
-        <Icon size={size} color={iconColor} />
-      </View>
-    );
-
-    const renderInner = () => {
-      if (glassType === 'none') {
-        return <Animated.View style={animatedStyle}>{content}</Animated.View>;
-      }
-      return (
-        <Animated.View style={[animatedStyle, styles.glassWrapper]}>
-          <GlassSurface
-            type={glassType}
-            isInteractive={!!onPress}
-            style={styles.glassSurface}
-          >
-            {content}
-          </GlassSurface>
-        </Animated.View>
-      );
-    };
-
-    return (
-      <Pressable
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-      >
-        {renderInner()}
-      </Pressable>
-    );
-  }
-);
+        pressed && styles.pressed,
+        disabled && styles.disabled,
+        style,
+      ]}
+    >
+      <GlassSurface
+        type={glassType}
+        style={[StyleSheet.absoluteFillObject, { borderRadius: radii.pill }]}
+      />
+      <Icon size={size} color={iconColor} strokeWidth={2} />
+    </Pressable>
+  );
+}
 
 const styles = StyleSheet.create({
-  base: {
-    padding: tokens.theme.spacing.md,
+  container: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  glassWrapper: {
-    borderRadius: tokens.theme.radii.pill,
     overflow: 'hidden',
   },
-  glassSurface: {
-    borderRadius: tokens.theme.radii.pill,
+  pressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.95 }],
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });
