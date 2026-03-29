@@ -4,10 +4,12 @@ import expoConfig from 'eslint-config-expo/flat.js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 
 export default defineConfig([
+  {
+    ignores: ['dist/**', 'node_modules/**', 'app.json'],
+  },
   expoConfig,
   eslintPluginPrettierRecommended,
   {
-    ignores: ['dist/**', 'node_modules/**'],
     rules: {
       'react/display-name': 'off',
       'react/no-direct-mutation-state': 'off',

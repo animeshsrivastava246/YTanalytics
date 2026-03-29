@@ -1,21 +1,22 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { LucideIcon } from 'lucide-react-native';
 import { AppText } from './AppText';
 import { GlassSurface } from './GlassSurface';
 import { useAppTheme } from '@/context/ThemeProvider';
 
 interface StatPillProps {
-  icon: LucideIcon;
+  icon?: LucideIcon;
   label?: string;
   value: string;
+  style?: StyleProp<ViewStyle>;
 }
 
-export function StatPill({ icon: Icon, label, value }: StatPillProps) {
+export function StatPill({ icon: Icon, label, value, style }: StatPillProps) {
   const { colors, spacing, radii } = useAppTheme();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <GlassSurface
         type="secondary"
         style={[
@@ -28,7 +29,9 @@ export function StatPill({ icon: Icon, label, value }: StatPillProps) {
           },
         ]}
       >
-        <Icon size={14} color={colors.accentPrimary} strokeWidth={2} />
+        {Icon && (
+          <Icon size={14} color={colors.accentPrimary} strokeWidth={2} />
+        )}
         {label && (
           <AppText
             variant="caption"

@@ -6,7 +6,7 @@ import React, { ReactNode, memo } from 'react';
 import { useSettingsStore } from '@/services/settingsStore';
 import { useAppTheme } from '@/context/ThemeProvider';
 
-type GlassType = 'primary' | 'secondary' | 'tertiary';
+export type GlassType = 'primary' | 'secondary' | 'tertiary' | 'none';
 
 interface GlassSurfaceProps {
   type?: GlassType;

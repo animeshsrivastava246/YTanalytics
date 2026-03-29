@@ -6,7 +6,7 @@ import { useAppTheme } from '@/context/ThemeProvider';
 
 interface IconButtonProps {
   icon: LucideIcon;
-  onPress: () => void;
+  onPress?: () => void;
   glassType?: GlassType;
   size?: number;
   color?: string;
@@ -41,10 +41,12 @@ export function IconButton({
         style,
       ]}
     >
-      <GlassSurface
-        type={glassType}
-        style={[StyleSheet.absoluteFillObject, { borderRadius: radii.pill }]}
-      />
+      {glassType !== 'none' && (
+        <GlassSurface
+          type={glassType}
+          style={[StyleSheet.absoluteFillObject, { borderRadius: radii.pill }]}
+        />
+      )}
       <Icon size={size} color={iconColor} strokeWidth={2} />
     </Pressable>
   );
