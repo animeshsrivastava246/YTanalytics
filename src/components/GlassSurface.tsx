@@ -2,7 +2,6 @@ import { BlurView, BlurTint } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { View, StyleSheet, ViewStyle, StyleProp, Platform } from 'react-native';
 import React, { ReactNode, memo } from 'react';
-
 import { useSettingsStore } from '@/services/settingsStore';
 import { useAppTheme } from '@/context/ThemeProvider';
 
@@ -63,32 +62,40 @@ export const GlassSurface = memo(
           styles.container,
           style,
           reduceTransparency && {
-            backgroundColor: colors.glassSecondary,
-            borderWidth: 1,
+            backgroundColor:
+              type === 'primary'
+                ? colors.cardPrimary
+                : type === 'tertiary'
+                  ? colors.cardTertiary
+                  : type === 'none'
+                    ? 'transparent'
+                    : colors.cardSecondary,
+            borderWidth: type === 'none' ? 0 : 1,
             borderColor: colors.borderSubtle,
           },
         ]}
         {...rest}
       >
         {!reduceTransparency && (
-          <BlurView
-            intensity={finalIntensity}
-            tint={tint ?? effect.tint}
-            style={StyleSheet.absoluteFillObject}
-          />
+          <>
+            <BlurView
+              intensity={finalIntensity}
+              tint={tint ?? effect.tint}
+              style={StyleSheet.absoluteFillObject}
+            />
+            <View
+              style={[
+                StyleSheet.absoluteFillObject,
+                {
+                  backgroundColor:
+                    type === 'primary' && colors.surfaceBg === '#000000'
+                      ? 'rgba(0,0,0,0.2)'
+                      : 'transparent',
+                },
+              ]}
+            />
+          </>
         )}
-        <View
-          style={[
-            StyleSheet.absoluteFillObject,
-            {
-              backgroundColor: reduceTransparency
-                ? colors.glassSecondary
-                : type === 'primary' && colors.surfaceBg === '#000000'
-                  ? 'rgba(0,0,0,0.2)'
-                  : 'transparent',
-            },
-          ]}
-        />
         {children}
       </View>
     );

@@ -1,31 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Linking, Pressable } from 'react-native';
+import { AddToComboModal } from '@/components/AddToComboModal';
+import { AppText } from '@/components/AppText';
+import { Chip } from '@/components/Chip';
+import { DetailSkeleton } from '@/components/DetailSkeleton';
+import { ErrorState } from '@/components/ErrorState';
+import { GlassSurface } from '@/components/GlassSurface';
+import { IconButton } from '@/components/IconButton';
+import { SpeedInput } from '@/components/SpeedInput';
+import { StatPill } from '@/components/StatPill';
+import { useAppTheme } from '@/context/ThemeProvider';
+import { useWatchTime } from '@/hooks/useWatchTime';
+import { useCommentThreads, useVideo } from '@/hooks/useYouTube';
+import { useSettingsStore } from '@/services/settingsStore';
+import { formatStat } from '@/utils/format';
+import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ArrowLeft,
   Clock,
-  Eye,
-  ThumbsUp,
-  MessageCircle,
-  Youtube,
   ExternalLink,
+  Eye,
+  MessageCircle,
+  ThumbsUp,
+  Youtube,
 } from 'lucide-react-native';
-import { Image } from 'expo-image';
-import { AppText } from '@/components/AppText';
-import { IconButton } from '@/components/IconButton';
-import { GlassSurface } from '@/components/GlassSurface';
-import { Chip } from '@/components/Chip';
-import { StatPill } from '@/components/StatPill';
-import { useVideo } from '@/hooks/useYouTube';
-import { useWatchTime } from '@/hooks/useWatchTime';
-import { useSettingsStore } from '@/services/settingsStore';
-import { formatStat } from '@/utils/format';
-import { DetailSkeleton } from '@/components/DetailSkeleton';
-import { ErrorState } from '@/components/ErrorState';
-import { SpeedInput } from '@/components/SpeedInput';
-import { useAppTheme } from '@/context/ThemeProvider';
-import * as Haptics from 'expo-haptics';
+import React, { useEffect, useState } from 'react';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function VideoDetail({ id }: { id: string }) {
   const router = useRouter();
@@ -35,6 +36,8 @@ export function VideoDetail({ id }: { id: string }) {
 
   const [speed, setSpeed] = useState<number>(defaultSpeed);
   const { data: video, isLoading, isError, error, refetch } = useVideo(id);
+  const { data: commentsData } = useCommentThreads(id, 5);
+  const [isComboModalVisible, setComboModalVisible] = useState(false);
 
   // Sync speed with global setting on mount or when setting changes
   useEffect(() => {
@@ -212,39 +215,111 @@ export function VideoDetail({ id }: { id: string }) {
           </View>
         </GlassSurface>
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.youtubeButton,
-            {
-              backgroundColor: colors.glassSecondary,
-              padding: spacing.md,
-              borderRadius: radii.md,
-              marginBottom: spacing.xxl,
-              borderWidth: 1,
-              borderColor: colors.accentPrimary + '40',
-            },
-            pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
-          ]}
-          onPress={handleWatchOnYouTube}
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: spacing.md,
+            marginBottom: spacing.xxl,
+          }}
         >
-          <Youtube color={colors.accentPrimary} size={20} />
-          <AppText
-            variant="subtitle"
-            color="accent"
-            style={styles.youtubeButtonText}
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionButton,
+              {
+                backgroundColor: colors.glassSecondary,
+                padding: spacing.md,
+                borderRadius: radii.md,
+                borderWidth: 1,
+                borderColor: colors.accentPrimary + '40',
+                flex: 1,
+              },
+              pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+            ]}
+            onPress={handleWatchOnYouTube}
           >
-            Watch on YouTube
-          </AppText>
-          <ExternalLink color={colors.accentPrimary} size={16} />
-        </Pressable>
+            <Youtube color={colors.accentPrimary} size={20} />
+            <AppText
+              variant="subtitle"
+              color="accent"
+              style={styles.actionButtonText}
+            >
+              Watch
+            </AppText>
+            <ExternalLink color={colors.accentPrimary} size={16} />
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionButton,
+              {
+                backgroundColor: colors.accentPrimary,
+                padding: spacing.md,
+                borderRadius: radii.md,
+                flex: 1,
+              },
+              pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+            ]}
+            onPress={() => setComboModalVisible(true)}
+          >
+            <AppText
+              variant="subtitle"
+              style={{ color: '#000', fontWeight: 'bold' }}
+            >
+              + Add to Combo
+            </AppText>
+          </Pressable>
+        </View>
+
+        {video && (
+          <AddToComboModal
+            visible={isComboModalVisible}
+            onClose={() => setComboModalVisible(false)}
+            item={{
+              id: video.id,
+              type: 'video',
+              title: video.title,
+              thumbnailUrl: video.thumbnail.url,
+            }}
+          />
+        )}
 
         <AppText
           variant="body"
           color="muted"
-          style={[styles.description, { marginTop: spacing.sm }]}
+          style={[styles.description, { marginTop: spacing.lg }]}
         >
-          {video.description}
+          {video.description || 'No description provided.'}
         </AppText>
+
+        {commentsData?.pages[0]?.comments &&
+          commentsData.pages[0].comments.length > 0 && (
+            <View style={{ marginTop: spacing.xxl, width: '100%' }}>
+              <AppText variant="h3" style={{ marginBottom: spacing.md }}>
+                Top Comments
+              </AppText>
+              {commentsData.pages[0].comments.slice(0, 5).map((comment) => (
+                <GlassSurface
+                  key={comment.id}
+                  type="secondary"
+                  style={{
+                    padding: spacing.md,
+                    borderRadius: radii.md,
+                    marginBottom: spacing.sm,
+                  }}
+                >
+                  <AppText
+                    variant="subtitle"
+                    style={{ marginBottom: spacing.xs }}
+                  >
+                    {comment.authorName}
+                  </AppText>
+                  <AppText variant="body" color="muted">
+                    {comment.text}
+                  </AppText>
+                </GlassSurface>
+              ))}
+            </View>
+          )}
       </View>
     </ScrollView>
   );
@@ -286,12 +361,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   savedResult: { marginTop: 4 },
-  youtubeButton: {
+  actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  youtubeButtonText: {
+  actionButtonText: {
     marginHorizontal: 8,
   },
   description: { lineHeight: 24 },

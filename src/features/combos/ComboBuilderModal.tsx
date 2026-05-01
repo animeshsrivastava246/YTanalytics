@@ -13,6 +13,7 @@ import { useSearch } from '@/hooks/useYouTube';
 import { ResultRow } from '@/features/search/components/ResultRow';
 import { RawYouTubeSearchItem } from '@/services/youtube.types';
 import { useAppTheme } from '@/context/ThemeProvider';
+import { Chip } from '@/components/Chip';
 
 export function ComboBuilderModal() {
   const router = useRouter();
@@ -23,9 +24,12 @@ export function ComboBuilderModal() {
   const [title, setTitle] = useState('');
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebounce(query, 500);
+  const [searchType, setSearchType] = useState<
+    'video' | 'playlist' | 'channel'
+  >('video');
   const [cart, setCart] = useState<ComboItem[]>([]);
 
-  const { data } = useSearch(debouncedQuery, 'video');
+  const { data } = useSearch(debouncedQuery, searchType);
 
   const handleSave = () => {
     if (!title.trim() || cart.length === 0) return;
@@ -34,13 +38,18 @@ export function ComboBuilderModal() {
   };
 
   const handleAddItem = (item: RawYouTubeSearchItem) => {
+    let id = '';
+    if (searchType === 'video') id = item.id?.videoId || '';
+    else if (searchType === 'playlist') id = item.id?.playlistId || '';
+    else if (searchType === 'channel') id = item.id?.channelId || '';
+
     const newItem: ComboItem = {
-      id: item.id?.videoId || '',
-      type: 'video',
+      id,
+      type: searchType,
       title: item.snippet?.title || '',
       thumbnailUrl: item.snippet?.thumbnails?.high?.url || '',
     };
-    if (!cart.find((c) => c.id === newItem.id)) {
+    if (id && !cart.find((c) => c.id === newItem.id)) {
       setCart([...cart, newItem]);
     }
   };
@@ -52,7 +61,7 @@ export function ComboBuilderModal() {
   const renderSearchItem = ({ item }: { item: RawYouTubeSearchItem }) => (
     <View style={[styles.searchRowWrapper, { marginBottom: spacing.md }]}>
       <View style={styles.searchRowContent}>
-        <ResultRow item={item} type="video" />
+        <ResultRow item={item} type={searchType} hideAddButton />
       </View>
       <IconButton
         icon={Plus}
@@ -203,9 +212,42 @@ export function ComboBuilderModal() {
           />
         </View>
 
+        <View
+          style={[
+            styles.filters,
+            {
+              paddingHorizontal: spacing.lg,
+              marginBottom: spacing.sm,
+              flexDirection: 'row',
+              gap: spacing.sm,
+            },
+          ]}
+        >
+          <Chip
+            label="Videos"
+            selected={searchType === 'video'}
+            onPress={() => setSearchType('video')}
+          />
+          <Chip
+            label="Playlists"
+            selected={searchType === 'playlist'}
+            onPress={() => setSearchType('playlist')}
+          />
+          <Chip
+            label="Channels"
+            selected={searchType === 'channel'}
+            onPress={() => setSearchType('channel')}
+          />
+        </View>
+
         <FlatList
           data={data?.items || []}
-          keyExtractor={(item, index) => item.id?.videoId || String(index)}
+          keyExtractor={(item, index) =>
+            item.id?.videoId ||
+            item.id?.playlistId ||
+            item.id?.channelId ||
+            String(index)
+          }
           renderItem={renderSearchItem}
           contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
           style={[styles.searchResults, { paddingHorizontal: spacing.lg }]}
@@ -241,6 +283,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
   },
+  filters: {},
   searchResults: {},
   searchRowWrapper: {
     flexDirection: 'row',

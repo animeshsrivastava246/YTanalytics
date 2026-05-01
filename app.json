@@ -17,7 +17,8 @@
         "foregroundImage": "./assets/android-icon.png",
         "backgroundImage": "./assets/android-icon.png",
         "monochromeImage": "./assets/android-icon.png"
-      }
+      },
+      "package": "com.animesh246.YTanalytics"
     },
     "web": {
       "output": "static",
@@ -42,6 +43,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fdda0194-fcd1-4f5a-a688-a6f147821fcd"
+      }
     }
   }
 }

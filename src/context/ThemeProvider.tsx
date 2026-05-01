@@ -23,6 +23,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const systemColorScheme = useColorScheme();
   const themePreference = useSettingsStore((state) => state.theme);
+  const reduceTransparency = useSettingsStore(
+    (state) => state.reduceTransparency
+  );
 
   const theme: ThemeType = useMemo(() => {
     if (themePreference === 'system') {
@@ -33,9 +36,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const value = useMemo(() => {
     const isDark = theme === 'dark';
+    const baseColors = isDark ? tokens.colors.dark : tokens.colors.light;
+
+    const colors = {
+      ...baseColors,
+      ...(reduceTransparency
+        ? {
+            glassPrimary: baseColors.cardPrimary,
+            glassSecondary: baseColors.cardSecondary,
+          }
+        : {}),
+    };
+
     return {
       theme,
-      colors: isDark ? tokens.colors.dark : tokens.colors.light,
+      colors,
       typography: tokens.typography,
       spacing: tokens.spacing,
       radii: tokens.radii,
@@ -43,7 +58,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
       glassStyle: isDark ? tokens.glassStyle.dark : tokens.glassStyle.light,
       isDark,
     };
-  }, [theme]);
+  }, [theme, reduceTransparency]);
 
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

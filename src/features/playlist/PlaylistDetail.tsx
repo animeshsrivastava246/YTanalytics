@@ -1,25 +1,26 @@
-import React, { useState, useMemo } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Clock, Video } from 'lucide-react-native';
 import { DetailSkeleton } from '@/components/DetailSkeleton';
 import { ErrorState } from '@/components/ErrorState';
 import { Skeleton } from '@/components/Skeleton';
+import { useRouter } from 'expo-router';
+import { ArrowLeft, Clock, Video } from 'lucide-react-native';
+import React, { useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AddToComboModal } from '@/components/AddToComboModal';
 import { AppText } from '@/components/AppText';
-import { IconButton } from '@/components/IconButton';
-import { GlassSurface } from '@/components/GlassSurface';
 import { Chip } from '@/components/Chip';
-import { StatPill } from '@/components/StatPill';
-import { usePlaylist, usePlaylistItems, useVideos } from '@/hooks/useYouTube';
-import { useWatchTime } from '@/hooks/useWatchTime';
-import { ResultRow } from '@/features/search/components/ResultRow';
-import { RawYouTubePlaylistItemDetails } from '@/services/youtube.types';
-import { PlaylistHero } from './components/PlaylistHero';
+import { GlassSurface } from '@/components/GlassSurface';
+import { IconButton } from '@/components/IconButton';
 import { SpeedInput } from '@/components/SpeedInput';
+import { StatPill } from '@/components/StatPill';
 import { useAppTheme } from '@/context/ThemeProvider';
+import { ResultRow } from '@/features/search/components/ResultRow';
+import { useWatchTime } from '@/hooks/useWatchTime';
+import { usePlaylist, usePlaylistItems, useVideos } from '@/hooks/useYouTube';
+import { RawYouTubePlaylistItemDetails } from '@/services/youtube.types';
 import * as Haptics from 'expo-haptics';
+import { PlaylistHero } from './components/PlaylistHero';
 
 export function PlaylistDetail({ id }: { id: string }) {
   const router = useRouter();
@@ -27,6 +28,7 @@ export function PlaylistDetail({ id }: { id: string }) {
   const { colors, spacing, radii } = useAppTheme();
 
   const [speed, setSpeed] = useState<number>(1);
+  const [isComboModalVisible, setComboModalVisible] = useState(false);
 
   const {
     data: playlist,
@@ -98,9 +100,43 @@ export function PlaylistDetail({ id }: { id: string }) {
           {playlist.channelTitle}
         </AppText>
 
-        <View style={styles.statsRow}>
+        <View style={[styles.statsRow, { marginBottom: spacing.sm }]}>
           <StatPill icon={Video} value={`${playlist.videoCount} videos`} />
         </View>
+
+        <Pressable
+          style={({ pressed }) => [
+            {
+              backgroundColor: colors.accentPrimary,
+              padding: spacing.md,
+              borderRadius: radii.md,
+              alignItems: 'center',
+              marginBottom: spacing.xxl,
+            },
+            pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+          ]}
+          onPress={() => setComboModalVisible(true)}
+        >
+          <AppText
+            variant="subtitle"
+            style={{ color: '#000', fontWeight: 'bold' }}
+          >
+            + Add to Combo
+          </AppText>
+        </Pressable>
+
+        {playlist && (
+          <AddToComboModal
+            visible={isComboModalVisible}
+            onClose={() => setComboModalVisible(false)}
+            item={{
+              id: playlist.id,
+              type: 'playlist',
+              title: playlist.title,
+              thumbnailUrl: playlist.thumbnail.url,
+            }}
+          />
+        )}
 
         <GlassSurface
           type="secondary"
@@ -216,7 +252,6 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 32,
     flexWrap: 'wrap',
   },
   timeCard: {},

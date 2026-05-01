@@ -1,29 +1,31 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Users, Video } from 'lucide-react-native';
+import { CardSkeleton } from '@/components/CardSkeleton';
 import { DetailSkeleton } from '@/components/DetailSkeleton';
 import { ErrorState } from '@/components/ErrorState';
-import { CardSkeleton } from '@/components/CardSkeleton';
+import { useRouter } from 'expo-router';
+import { ArrowLeft, Users, Video } from 'lucide-react-native';
+import React from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AddToComboModal } from '@/components/AddToComboModal';
 import { AppText } from '@/components/AppText';
+import { Chip } from '@/components/Chip';
 import { IconButton } from '@/components/IconButton';
 import { StatPill } from '@/components/StatPill';
-import { Chip } from '@/components/Chip';
+import { useAppTheme } from '@/context/ThemeProvider';
 import { ResultRow } from '@/features/search/components/ResultRow';
 import { useChannel, usePlaylistItems, useVideos } from '@/hooks/useYouTube';
 import { formatStat } from '@/utils/format';
 import { ChannelHero } from './components/ChannelHero';
-import { useAppTheme } from '@/context/ThemeProvider';
 
 export function ChannelDetail({ id }: { id: string }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { colors, spacing } = useAppTheme();
+  const { colors, spacing, radii } = useAppTheme();
   const [activeTab, setActiveTab] = React.useState<'uploads' | 'playlists'>(
     'uploads'
   );
+  const [isComboModalVisible, setComboModalVisible] = React.useState(false);
 
   const { data: channel, isLoading, isError, error, refetch } = useChannel(id);
 
@@ -93,12 +95,45 @@ export function ChannelDetail({ id }: { id: string }) {
         <View
           style={[
             styles.statsRow,
-            { gap: spacing.md, marginBottom: spacing.xxl },
+            { gap: spacing.md, marginBottom: spacing.sm },
           ]}
         >
           <StatPill icon={Users} value={formatStat(channel.subscriberCount)} />
           <StatPill icon={Video} value={formatStat(channel.videoCount)} />
         </View>
+
+        <Pressable
+          style={({ pressed }) => [
+            {
+              backgroundColor: colors.accentPrimary,
+              padding: spacing.md,
+              borderRadius: radii.md,
+              alignItems: 'center',
+            },
+            pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+          ]}
+          onPress={() => setComboModalVisible(true)}
+        >
+          <AppText
+            variant="subtitle"
+            style={{ color: '#000', fontWeight: 'bold' }}
+          >
+            + Add to Combo
+          </AppText>
+        </Pressable>
+
+        {channel && (
+          <AddToComboModal
+            visible={isComboModalVisible}
+            onClose={() => setComboModalVisible(false)}
+            item={{
+              id: channel.id,
+              type: 'channel',
+              title: channel.title,
+              thumbnailUrl: channel.thumbnail.url,
+            }}
+          />
+        )}
 
         <AppText
           variant="body"

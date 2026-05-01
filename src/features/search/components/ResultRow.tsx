@@ -1,12 +1,15 @@
-import React, { memo, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Image } from 'expo-image';
+import { AddToComboModal } from '@/components/AddToComboModal';
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
+import { IconButton } from '@/components/IconButton';
 import { StatPill } from '@/components/StatPill';
-import { RawYouTubeSearchItem } from '@/services/youtube.types';
 import { useAppTheme } from '@/context/ThemeProvider';
+import { RawYouTubeSearchItem } from '@/services/youtube.types';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import { Plus } from 'lucide-react-native';
+import React, { memo, useCallback } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 type SearchType = 'video' | 'playlist' | 'channel';
 
@@ -29,94 +32,125 @@ interface ResultRowProps {
       };
   type: SearchType;
   index?: number;
+  hideAddButton?: boolean;
 }
 
-export const ResultRow = memo(({ item, type, index }: ResultRowProps) => {
-  const router = useRouter();
-  const { colors, spacing, radii } = useAppTheme();
+export const ResultRow = memo(
+  ({ item, type, index, hideAddButton }: ResultRowProps) => {
+    const router = useRouter();
+    const { colors, spacing, radii } = useAppTheme();
+    const [isComboModalVisible, setComboModalVisible] = React.useState(false);
 
-  const handlePress = useCallback(() => {
-    const rawId = item.id;
-    let finalId = '';
+    const handlePress = useCallback(() => {
+      const rawId = item.id;
+      let finalId = '';
 
-    if (typeof rawId === 'string') {
-      finalId = rawId;
-    } else if (rawId && typeof rawId === 'object') {
-      if (type === 'video' && 'videoId' in rawId)
-        finalId = rawId.videoId as string;
-      else if (type === 'playlist' && 'playlistId' in rawId)
-        finalId = rawId.playlistId as string;
-      else if (type === 'channel' && 'channelId' in rawId)
-        finalId = rawId.channelId as string;
-    }
+      if (typeof rawId === 'string') {
+        finalId = rawId;
+      } else if (rawId && typeof rawId === 'object') {
+        if (type === 'video' && 'videoId' in rawId)
+          finalId = rawId.videoId as string;
+        else if (type === 'playlist' && 'playlistId' in rawId)
+          finalId = rawId.playlistId as string;
+        else if (type === 'channel' && 'channelId' in rawId)
+          finalId = rawId.channelId as string;
+      }
 
-    if (!finalId) return;
+      if (!finalId) return;
 
-    if (type === 'video') {
-      router.push(`/video/${finalId}`);
-    } else if (type === 'playlist') {
-      router.push(`/playlist/${finalId}`);
-    } else if (type === 'channel') {
-      router.push(`/channel/${finalId}`);
-    }
-  }, [item.id, type, router]);
+      if (type === 'video') {
+        router.push(`/video/${finalId}`);
+      } else if (type === 'playlist') {
+        router.push(`/playlist/${finalId}`);
+      } else if (type === 'channel') {
+        router.push(`/channel/${finalId}`);
+      }
+    }, [item.id, type, router]);
 
-  const safeItem = item as Record<string, unknown>;
-  const title = item.snippet?.title || (safeItem.title as string | undefined);
-  const channelTitle =
-    item.snippet?.channelTitle || (safeItem.channelTitle as string | undefined);
-  const thumbnailUrl =
-    item.snippet?.thumbnails?.high?.url ||
-    (safeItem.thumbnail as Record<string, string> | undefined)?.url ||
-    '';
-  const durationFormatted = safeItem.durationFormatted as string | undefined;
+    const safeItem = item as Record<string, unknown>;
+    const title = item.snippet?.title || (safeItem.title as string | undefined);
+    const channelTitle =
+      item.snippet?.channelTitle ||
+      (safeItem.channelTitle as string | undefined);
+    const thumbnailUrl =
+      item.snippet?.thumbnails?.high?.url ||
+      (safeItem.thumbnail as Record<string, string> | undefined)?.url ||
+      '';
+    const durationFormatted = safeItem.durationFormatted as string | undefined;
 
-  return (
-    <Card
-      onPress={handlePress}
-      contentStyle={[styles.card, { padding: spacing.md }]}
-      index={index}
-    >
-      <View style={styles.row}>
-        <View style={[styles.thumbnailContainer, { marginRight: spacing.md }]}>
-          <Image
-            source={{ uri: thumbnailUrl }}
-            style={[
-              type === 'channel' ? styles.avatar : styles.thumbnail,
-              { borderRadius: type === 'channel' ? radii.pill : radii.sm },
-            ]}
-            contentFit="cover"
-          />
-          {type === 'video' && !!durationFormatted && (
-            <StatPill
-              value={durationFormatted}
+    return (
+      <Card
+        onPress={handlePress}
+        contentStyle={[styles.card, { padding: spacing.md }]}
+        index={index}
+      >
+        <View style={styles.row}>
+          <View
+            style={[styles.thumbnailContainer, { marginRight: spacing.md }]}
+          >
+            <Image
+              source={{ uri: thumbnailUrl }}
               style={[
-                styles.durationBadge,
-                {
-                  bottom: spacing.xs,
-                  right: spacing.xs,
-                  backgroundColor: colors.scrimDark,
-                },
+                type === 'channel' ? styles.avatar : styles.thumbnail,
+                { borderRadius: type === 'channel' ? radii.pill : radii.sm },
               ]}
+              contentFit="cover"
+            />
+            {type === 'video' && !!durationFormatted && (
+              <StatPill
+                value={durationFormatted}
+                style={[
+                  styles.durationBadge,
+                  {
+                    bottom: spacing.xs,
+                    right: spacing.xs,
+                    backgroundColor: colors.scrimDark,
+                  },
+                ]}
+              />
+            )}
+          </View>
+          <View style={styles.info}>
+            <AppText variant="subtitle" numberOfLines={2}>
+              {title}
+            </AppText>
+            <AppText
+              variant="caption"
+              color="muted"
+              style={[styles.channelName, { marginTop: spacing.xs }]}
+            >
+              {channelTitle || 'Unknown Channel'}
+            </AppText>
+          </View>
+
+          {!hideAddButton && (
+            <IconButton
+              icon={Plus}
+              onPress={() => setComboModalVisible(true)}
+              glassType="tertiary"
+              color={colors.accentPrimary}
+              style={{ marginLeft: spacing.sm, alignSelf: 'center' }}
             />
           )}
         </View>
-        <View style={styles.info}>
-          <AppText variant="subtitle" numberOfLines={2}>
-            {title}
-          </AppText>
-          <AppText
-            variant="caption"
-            color="muted"
-            style={[styles.channelName, { marginTop: spacing.xs }]}
-          >
-            {channelTitle || 'Unknown Channel'}
-          </AppText>
-        </View>
-      </View>
-    </Card>
-  );
-});
+
+        <AddToComboModal
+          visible={isComboModalVisible}
+          onClose={() => setComboModalVisible(false)}
+          item={{
+            id:
+              typeof item.id === 'string'
+                ? item.id
+                : (item.id as any)?.[`${type}Id`] || '',
+            type,
+            title: title || '',
+            thumbnailUrl,
+          }}
+        />
+      </Card>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   card: {},

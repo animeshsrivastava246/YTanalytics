@@ -5,6 +5,9 @@ export const tokens = {
   colors: {
     light: {
       surfaceBg: '#F2F2F7',
+      cardPrimary: '#FFFFFF',
+      cardSecondary: '#F2F2F7',
+      cardTertiary: '#E5E5EA',
       glassPrimary: 'rgba(255,255,255,0.85)',
       glassSecondary: 'rgba(242,242,247,0.75)',
       accentPrimary: '#FF3B30',
@@ -20,6 +23,9 @@ export const tokens = {
     },
     dark: {
       surfaceBg: '#000000',
+      cardPrimary: '#1C1C1E',
+      cardSecondary: '#2C2C2E',
+      cardTertiary: '#3A3A3C',
       glassPrimary: 'rgba(28,28,30,0.75)',
       glassSecondary: 'rgba(44,44,46,0.65)',
       accentPrimary: '#FF3B30',

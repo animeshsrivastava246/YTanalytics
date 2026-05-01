@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,7 +9,7 @@ import { GlassSurface } from '@/components/GlassSurface';
 import { Chip } from '@/components/Chip';
 import { useComboStore } from '@/features/combos/useComboStore';
 import { ComboItemRow } from '@/features/combos/components/ComboItemRow';
-import { useVideos } from '@/hooks/useYouTube';
+import { useComboAggregation } from '@/hooks/useComboAggregation';
 import { useWatchTime } from '@/hooks/useWatchTime';
 import { SpeedInput } from '@/components/SpeedInput';
 import { useAppTheme } from '@/context/ThemeProvider';
@@ -25,13 +25,7 @@ export default function ComboDetailScreen() {
   const [speed, setSpeed] = useState<number>(1);
   const combo = combos.find((c) => c.id === id);
 
-  const videoIds = useMemo(() => {
-    return (
-      combo?.items.filter((i) => i.type === 'video').map((i) => i.id) || []
-    );
-  }, [combo]);
-
-  const { data: videos } = useVideos(videoIds);
+  const { data: videos } = useComboAggregation(combo);
   const watchTime = useWatchTime(videos || [], speed);
 
   if (!combo) {
